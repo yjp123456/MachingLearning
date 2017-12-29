@@ -1,0 +1,93 @@
+1、安装numpy，里面包含各种线代矩阵以及随机数等算法
+   # 使用 python 3+:
+   pip3 install numpy
+   # 使用 python 2+:
+   pip install numpy
+
+2、安装tensorflow，用于机器学习，目前只支持Python 3.5/3.6 (64bit) 版本
+   # CPU 版的
+   pip3 install --upgrade tensorflow
+   # GPU 版的
+   pip3 install --upgrade tensorflow-gpu
+   
+   注意：window安装前检查电脑是否有 Windows 的 Microsoft Visual C++ 2015 redistributable update 3 64 bit
+
+3、安装matplotlib，用于绘图
+   python -mpip install -U pip
+   python -mpip install -U matplotlib
+
+4、加速神经网络学习：
+   1）SGD：最基础方法，把数据拆成小批小批，每次使用批数据训练，速度最慢
+   2）Momentum: 
+      m = b1 * m - Learning rate * dx
+      w += m
+      传统方式是w += -Learning rate * dx，这种是在权值累加上一个负的学习率乘以校正值
+      这种会走很多弯路，比较慢，Momentum相当于加了个斜坡，依靠向下的惯性来让他走的弯路变少
+   3）AdaGrad：
+      v += dx^2
+      w += -Learning rate * dx / √￣v
+      AdaGrad相当于给他加了双不好走的鞋子，鞋子成为走弯路的阻力
+   4）RMSProp:
+      v = b1 * v + (1 - b1) * dx^2
+      w += -Learning rate * dx / √￣v
+      RMSProp合并了Momentum和AdaGrad两种，但是合并并不完全
+   4）Adam:
+      m = b1 * m + (1 - b1) * dx
+      v = b2 * v + (1 - b2) * dx^2
+      w += -Learning rate * m / √￣v
+      Adam相当于Momentum和AdaGrad的结合，实验证明，大多数时候，使用adam都能又快又好的达到目标
+
+5、优化器，tensorflow目前有七种优化器，分别是：
+   GradientDescentOptimizer （SGD）
+   AdagradOptimizer 
+   AdagradDAOptimizer 
+   MomentumOptimizer 
+   AdamOptimizer 
+   FtrlOptimizer 
+   RMSPropOptimizer
+
+6、模型展示：
+    sess = tf.Session() # get session
+    writer = tf.summary.FileWriter("logs/", sess.graph)
+    利用graph来将定义的框架信息收集起来，然后放在/log目录下
+    最后在终端上执行命令"tensorboard --logdir logs"后会生成一个url，将这个url在浏览器上打开就能看到
+    框架图了，框架图上双击可以展开详细图
+
+7、记录权值、偏移值、输出的变化曲线：
+    writer = tf.summary.FileWriter("logs/", sess.graph)  # tensorflow >=0.12
+    merged = tf.summary.merge_all()  # tensorflow >= 0.12，把所有的 summaries 合并到一起
+    biases = tf.Variable(tf.zeros([1, out_size]) + 0.1, name='b')  # 偏移，tf.zeros([n, m])代表生成一个 n x m 矩阵
+    # tf.histogram_summary(layer_name+'/biase',biases)   # tensorflow 0.12 以下版的
+    tf.summary.histogram('/value', biases)  # Tensorflow >= 0.12
+
+    tf.summary就是记录这些值的变化过程，histogram代表放在HISTOGRAM标签下，需要记录的时候调用函数：    
+    rs = sess.run(merged, feed_dict={xs: x_data, ys: y_data})
+    writer.add_summary(rs, i) # 写入log
+
+8、防止过拟合：
+   有一种专门用在神经网络的正规化的方法, 叫作 dropout. 在训练的时候, 我们随机忽略掉一些神经元和神经联结 , 
+   是这个神经网络变得”不完整”. 用一个不完整的神经网络训练一次，使用dropout方法如下：
+    Wx_plus_b = tf.add(tf.matmul(inputs, Weights), biases)  # y = wx + b
+    Wx_plus_b = tf.nn.dropout(Wx_plus_b, keep_prob)
+
+    keep_prob是保留率，就是每次结果保留的比例，keep_prob=1就没有dropout效果了，
+    使用dropout的情景是训练数据比较少的情况下比较明显，训练数据多的话效果不明显
+
+9、卷积神经网络：
+   通过定义卷积层和池化来逐层提取特征，其中卷积层通常扫描步伐为1，就是每次移动距离都是1，扫描过程就是像
+   拿手电筒从图片左上角开始遍历整张图片，遍历到的区域会生成一个特征值，特征值的计算是将卷积核中的每个值和扫描区域对应的值相乘
+   然后将所有相乘结果求和得到一个新的值，因为移动距离为1，所以从左到右，从上到下移动过程中生成的特征层大小就和
+   原始数据大小一样，然后经过池化来压缩卷积层数据，减少系统复杂度，最后定义一个分类器将卷积结果进行分类就能得到预估值了
+
+   卷积神经网络中的一个特点就是权值共享，即每个滤波器在扫描图像的每个区域时，滤波器本身是不变的，
+   假如有一张输入图像，先假定它是单通道的灰度图像，现在有一个[3 × 3]的卷积核，
+   卷积核权重假如是[1，0，1；0，1，0；0，0，1]。我现在从左到右，从上到下，用这个卷积核在输入图像上滑动，每到一处，
+   都是用同样的权重，对图像进行滤波，得到一个特征图。这就是所谓的权值
+
+10、保存训练结果数据：
+    每次运行结束后通过下面代码保存sess数据
+    saver = tf.train.Saver()
+    save_path = saver.save(sess, "my_net/save_net.ckpt")#保存训练结果
+
+    下次运行时先调用下面方法来先加载上次数据，然后再开始训练
+    saver.restore(sess, "my_net/save_net.ckpt")
