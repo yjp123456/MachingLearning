@@ -50,6 +50,7 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
 6、模型展示：
     sess = tf.Session() # get session
+    with tf.name_scope(layer_name) # 需要展示的节点需要用这个方法来定义展示节点名称，然后在框架图中就能看到这个节点了
     writer = tf.summary.FileWriter("logs/", sess.graph)
     利用graph来将定义的框架信息收集起来，然后放在/log目录下
     最后在终端上执行命令"tensorboard --logdir logs"后会生成一个url，将这个url在浏览器上打开就能看到
