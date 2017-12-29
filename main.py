@@ -270,6 +270,8 @@ def conv2d(x, W):
     # 定义卷积，tf.nn.conv2d函数是tensoflow里面的二维的卷积函数，x是图片的所有参数，W是此卷积层的权重，
     # 然后定义步长strides=[1,1,1,1]值，strides[0]和strides[3]的两个1是默认值，
     # 中间两个1代表padding时在x方向运动一步，y方向运动一步，padding采用的方式是SAME
+    # W是CNN中的卷积核，它要求是一个Tensor，具有[filter_height, filter_width, in_channels, out_channels]这样的shape
+    # SAME表示卷积核左边界可以停留在图像边缘，这样生成的特征层大小和原数据大小完全一样，如果使用VALID代表卷积核右边界可以停留在图像边缘
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 
