@@ -1,3 +1,5 @@
+https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
+
 1、安装numpy，里面包含各种线代矩阵以及随机数等算法
    # 使用 python 3+:
    pip3 install numpy
