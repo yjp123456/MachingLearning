@@ -193,7 +193,7 @@ def test4():
 
     # 把xs的形状变成[-1,28,28,1]，-1代表先不考虑输入的图片例子多少这个维度，后面的1是channel的数量，
     # 因为我们输入的图片是黑白的，因此channel是1，例如如果是RGB图像，那么channel就是3
-    x_image = tf.reshape(xs, [-1, 28, 28, 1])
+    x_image = tf.reshape(xs, [-1, 28, 28, 1])  # 转换成一个四维数组，其中最外层行数自动计算
 
     ## 第一个卷积层 ##
     W_conv1 = weight_variable([5, 5, 1, 32])  # 卷积核patch的大小是5x5,相当于扫描区域，因为黑白图片channel是1所以输入是1，输出是32个featuremap
@@ -203,7 +203,8 @@ def test4():
     h_pool1 = max_pool_2x2(h_conv1)  # 定义pooling，压缩后大小为 14x14x32
 
     ## 第二个卷积层 ##
-    W_conv2 = weight_variable([5, 5, 32, 64])  # patch 5x5, in size 32, out size 64，32代表in channel，即卷积核的深度，这样扫描区域就是 5 x 5 x 32
+    W_conv2 = weight_variable(
+        [5, 5, 32, 64])  # patch 5x5, in size 32, out size 64，32代表in channel，即卷积核的深度，这样扫描区域就是 5 x 5 x 32
     b_conv2 = bias_variable([64])
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)  # output size 14x14x64
     h_pool2 = max_pool_2x2(h_conv2)  # output size 7x7x64
@@ -213,7 +214,7 @@ def test4():
     W_fc1 = weight_variable([7 * 7 * 64, 1024])
     b_fc1 = bias_variable([1024])
     # [n_samples, 7, 7, 64] ->> [n_samples, 7*7*64]
-    # 通过tf.reshape()将h_pool2的输出值从一个三维的变为一维的数据, -1表示先不考虑输入图片例子维度, 将上一个输出结果展平
+    # 通过tf.reshape()将h_pool2的输出值从一个三维的变为二维的数据, -1表示自动计算行数,下面的结果只有一行，所以相当于将上一个输出结果展平
     h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
     # 计算输出值
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
