@@ -46,13 +46,13 @@ def RNN(X, weights, biases):
     # 3、输出门控制，整合输入门和忘记门的结果
 
     # transpose the inputs shape from
-    # X ==> (128 batch * 28 steps, 28 inputs)
+    # X ==> (128 batch * 28 steps, 28 inputs)，二维数组
     X = tf.reshape(X, [-1, n_inputs])  # 将原数据重组成固定n_inputs列的数组，-1代表行数自动计算
 
     # into hidden
-    # X_in = (128 batch * 28 steps, 128 hidden)
+    # X_in = (128 batch * 28 steps, 128 hidden)，二维数组
     X_in = tf.matmul(X, weights['in']) + biases['in']
-    # X_in ==> (128 batch, 28 steps, 128 hidden)，
+    # X_in ==> (128 batch, 28 steps, 128 hidden)，三维数组
     X_in = tf.reshape(X_in, [-1, n_steps, n_hidden_units])
 
     # cell
@@ -95,7 +95,7 @@ def RNN(X, weights, biases):
     else:
         outputs = tf.unstack(tf.transpose(outputs, [1, 0, 2]))
     results = tf.matmul(outputs[-1], weights['out']) + biases[
-        'out']  # shape = (128, 10)，tf.matmul是矩阵相乘，outputs[-1]是取最后一个output
+        'out']  # shape = (128, 10)，tf.matmul是矩阵相乘，output是一个三维数组，outputs[-1]是取output最后一个元素，每个元素是一个二维数组
 
     return results
 
