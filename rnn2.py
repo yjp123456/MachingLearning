@@ -64,7 +64,8 @@ class LSTMRNN(object):
         with tf.name_scope('initial_state'):
             self.cell_init_state = lstm_cell.zero_state(self.batch_size, dtype=tf.float32)
         self.cell_outputs, self.cell_final_state = tf.nn.dynamic_rnn(
-            lstm_cell, self.l_in_y, initial_state=self.cell_init_state, time_major=False)  # 初始化状态用的是上一次结果的状态
+            lstm_cell, self.l_in_y, initial_state=self.cell_init_state,
+            time_major=False)  # 初始化状态用的是上一次结果的状态,否则结果就不是连续的曲线图了
 
     def add_output_layer(self):
         # shape = (batch * steps, cell_size)
@@ -143,7 +144,7 @@ if __name__ == '__main__':
 
         # plotting
         plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
-        plt.ylim((-1.2, 1.2))
+        plt.ylim((-1.2, 1.2))  # y轴范围
         plt.draw()
         plt.pause(0.3)
 

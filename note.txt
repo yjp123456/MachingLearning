@@ -112,3 +112,9 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
     LSTM 就像延缓记忆衰退的良药, 可以带来更好的结果
 
 12、reshape分为两种，一种是ndArray.reshape，这个返回值还是一个ndArray，另一个是tensorflow.reshape，这个返回是一个Tensor对象，需要用sess.run()才能显示结果
+
+13、_, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})，第一个参数是fetches，可以是一个元素或一个数组，运行时会执行fetches里面每个元素，然后
+   每个元素都会产生一个对应结果，上面这个就是optimizer返回_，cost返回c
+
+14、mnist = input_data.read_data_sets("/tmp/data/", one_hot=True) one_hot为True代表label(即每个xs对应的ys)的值用一个vector表示，这个向量总共一行十列，0是填充值，1
+   是具体值所在位置，比如3就变成了[0,0,0,1,0,0,0,0,0,0],one_hot为False代表不用vector表示，3就是3
