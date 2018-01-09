@@ -8,7 +8,35 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 
 
-def add_layer(inputs, in_size, out_size, n_layer, keep_prob=1, activation_function=None):
+def add_layer(inputs, in_size, out_size, n_layer, keep_prob=1, activation_function=None, norm=False):
+    # 数据预处理，让数据具备统一规格
+    if norm:
+        # Batch Normalize
+        fc_mean, fc_var = tf.nn.moments(
+            inputs,
+            axes=[0],  # the dimension you wanna normalize, here [0] for batch
+            # for image, you wanna do [0, 1, 2] for [batch, height, width] but not channel
+        )
+        scale = tf.Variable(tf.ones([in_size]))
+        shift = tf.Variable(tf.zeros([in_size]))
+        epsilon = 0.001
+
+        # apply moving average for mean and var when train on batch
+        ema = tf.train.ExponentialMovingAverage(decay=0.5)
+
+        # 根据新的 batch 数据, 记录并稍微修改之前的 mean/var
+        def mean_var_with_update():
+            ema_apply_op = ema.apply([fc_mean, fc_var])
+            with tf.control_dependencies([ema_apply_op]):
+                return tf.identity(fc_mean), tf.identity(fc_var)
+
+        mean, var = mean_var_with_update()
+
+        inputs = tf.nn.batch_normalization(inputs, mean, var, shift, scale, epsilon)
+        # similar with this two steps:
+        # inputs = (inputs - fc_mean) / tf.sqrt(fc_var + 0.001)
+        # inputs = inputs * scale + shift
+
     ## add one more layer and return the output of this layer
     layer_name = 'layer%s' % n_layer  ## define a new var
     with tf.name_scope(layer_name):
@@ -24,6 +52,7 @@ def add_layer(inputs, in_size, out_size, n_layer, keep_prob=1, activation_functi
         with tf.name_scope('Wx_plus_b'):
             Wx_plus_b = tf.add(tf.matmul(inputs, Weights), biases)  # y = wx + b
             Wx_plus_b = tf.nn.dropout(Wx_plus_b, keep_prob)  # 利用dropout防止过拟合
+
         if activation_function is None:
             outputs = Wx_plus_b
         else:
@@ -49,9 +78,9 @@ def test1():
         ys = tf.placeholder(tf.float32, [None, 1])
 
     # 定义隐藏层，这里使用Tensorflow 自带的激励函数tf.nn.relu
-    L1 = add_layer(xs, 1, 10, n_layer=1, activation_function=tf.nn.relu)
+    L1 = add_layer(xs, 1, 10, n_layer=1, activation_function=tf.nn.relu, norm=True)
     # 定义输出层
-    prediction = add_layer(L1, 10, 1, n_layer=2, activation_function=None)
+    prediction = add_layer(L1, 10, 1, n_layer=2, activation_function=None, norm=True)
     #   计算预测值prediction和真实值的误差，对二者差的平方求和再取平均
     with tf.name_scope('loss'):
         loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - prediction), reduction_indices=[1]))
@@ -292,5 +321,6 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
     return result
 
 
+
 if __name__ == '__main__':
-    test4()
+    test1()

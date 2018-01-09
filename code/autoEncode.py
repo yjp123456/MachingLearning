@@ -105,6 +105,7 @@ def encoder(x):
                                    biases['encoder_b2']))
     layer_3 = tf.nn.sigmoid(tf.add(tf.matmul(layer_2, weights['encoder_h3']),
                                    biases['encoder_b3']))
+    #在第四层时，输出量不再是 [0,1] 范围内的数，而是将数据通过默认的 Linear activation function 调整为 (-∞,∞)
     layer_4 = tf.add(tf.matmul(layer_3, weights['encoder_h4']),
                                     biases['encoder_b4'])
     return layer_4

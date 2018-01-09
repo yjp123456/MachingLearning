@@ -52,8 +52,8 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
     sess = tf.Session() # get session
     with tf.name_scope(layer_name) # 需要展示的节点需要用这个方法来定义展示节点名称，然后在框架图中就能看到这个节点了
     writer = tf.summary.FileWriter("logs/", sess.graph)
-    利用graph来将定义的框架信息收集起来，然后放在/log目录下
-    最后在终端上执行命令"tensorboard --logdir logs"后会生成一个url，将这个url在浏览器上打开就能看到
+    利用graph来将定义的框架信息收集起来，然后放在/logs目录下
+    命令行进入logs目录所在路径，执行命令"tensorboard --logdir logs"后会生成一个url，将这个url在浏览器上打开就能看到
     框架图了，框架图上双击可以展开详细图
 
 7、记录权值、偏移值、输出的变化曲线：
@@ -118,3 +118,16 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
 14、mnist = input_data.read_data_sets("/tmp/data/", one_hot=True) one_hot为True代表label(即每个xs对应的ys)的值用一个vector表示，这个向量总共一行十列，0是填充值，1
    是具体值所在位置，比如3就变成了[0,0,0,1,0,0,0,0,0,0],one_hot为False代表不用vector表示，3就是3
+
+15、在神经网络中, 数据分布对训练会产生影响. 比如某个神经元 x 的值为1, 某个 Weights 的初始值为 0.1, 这样后一层神经元计算结果就是 Wx = 0.1;
+    又或者 x = 20, 这样 Wx 的结果就为 2. 现在还不能看出什么问题, 但是, 当我们加上一层激励函数, 激活这个 Wx 值的时候, 问题就来了.
+    如果使用 像 tanh 的激励函数, Wx 的激活值就变成了 ~0.1 和 ~1, 接近于 1 的部已经处在了 激励函数的饱和阶段, 也就是如果 x 无论再怎么扩大,
+    tanh 激励函数输出值也还是 接近1. 换句话说, 神经网络在初始阶段已经不对那些比较大的 x 特征范围 敏感了. 这样很糟糕,
+    想象我轻轻拍自己的感觉和重重打自己的感觉居然没什么差别, 这就证明我的感官系统失效了. 当然我们是可以用之前提到的对数据做 normalization 预处理,
+    使得输入的 x 变化范围不会太大, 让输入值经过激励函数的敏感部分. 但刚刚这个不敏感问题不仅仅发生在神经网络的输入层, 而且在隐藏层中也经常会发生
+
+    因此，可以使用tf.nn.batch_normalization(xs, mean, var, shift, scale, epsilon)来预处理数据
+
+16、python中对象传递是把对象地址传递过去，因此改变对象内容会对原来对象产生相同影响，但是如果将该对象引用指向另一个地址，原来的对象是不会受影响的，
+    比如在批标准化数据时，传入的Tensor对象会被重新指向另一个地址，xs = tf.nn.batch_normalization(inputs, mean, var, shift, scale, epsilon)，这样是
+    不会影响原来的xs对象的
