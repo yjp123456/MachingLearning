@@ -160,3 +160,14 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
      而预测 Q 现实的神经网络使用的参数则是很久以前的，即 Q现实 = R + γ*maxQ中参数是比较久之前的
 
      Deep Q Network训练前要先累积一定的状态和 Q 现实对应的数据，然后再把这些数据丢进神经网络去训练神经网络参数
+
+21、算法选择上可以先考虑动作是否连续，连续动作 (动作是一个连续值, 比如旋转角度)
+        Policy gradient
+        DDPG
+        A3C
+        PPO
+    离散动作 (动作是一个离散值, 比如向前,向后走)
+        Q-learning
+        DQN
+        A3C
+        PPO

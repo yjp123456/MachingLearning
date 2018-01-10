@@ -232,8 +232,9 @@ def test4():
     h_pool1 = max_pool_2x2(h_conv1)  # 定义pooling，压缩后大小为 14x14x32
 
     ## 第二个卷积层 ##
-    W_conv2 = weight_variable(
-        [5, 5, 32, 64])  # patch 5x5, in size 32, out size 64，32代表in channel，即卷积核的深度，这样扫描区域就是 5 x 5 x 32
+    # patch 5x5, in size 32, out size 64，32代表in channel，即卷积核的维度，64代表卷积核个数，这样每个卷积核就会产生32个扫描结果，
+    # 然后将这32个扫描结果对应位置相加后再和bias相加，最后得到一张新的特征图，即每个卷积核会生成一张特征图，卷积核是64个，共产生64张特征图
+    W_conv2 = weight_variable([5, 5, 32, 64])
     b_conv2 = bias_variable([64])
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)  # output size 14x14x64
     h_pool2 = max_pool_2x2(h_conv2)  # output size 7x7x64
@@ -271,9 +272,9 @@ def test4():
         init = tf.global_variables_initializer()
     sess.run(init)
 
-    saver = tf.train.Saver()
-    if os.path.exists('my_net'):
-        saver.restore(sess, "my_net/save_net.ckpt")
+    save_path = "my_net"
+    if os.path.exists(save_path):
+        restore(sess, save_path)
 
     for i in range(1000):
         batch_xs, batch_ys = mnist.train.next_batch(100)
@@ -282,8 +283,19 @@ def test4():
             print(compute_accuracy2(sess, xs, ys, prediction, keep_prob,
                                     mnist.test.images[:1000], mnist.test.labels[:1000]))
 
-    save_path = saver.save(sess, "my_net/save_net.ckpt")  # 保存训练结果
+    # 保存训练结果
+    save(sess, save_path)
     print("save result to %s" % (save_path))
+
+
+def save(sess, path):
+    saver = tf.train.Saver()
+    saver.save(sess, path, write_meta_graph=False)
+
+
+def restore(sess, path):
+    saver = tf.train.Saver()
+    saver.restore(sess, path)
 
 
 def weight_variable(shape):
@@ -319,7 +331,6 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     result = sess.run(accuracy, feed_dict={xs: v_xs, ys: v_ys, keep_prob: 1})
     return result
-
 
 
 if __name__ == '__main__':
