@@ -171,3 +171,5 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
         DQN
         A3C
         PPO
+
+22、pandas.get_dummies(data, prefix=data.columns)可以把一个dataFrame转成one_hot结构，即每一行数据都用一组0和1的序列表示，这样便于用于神经网络
