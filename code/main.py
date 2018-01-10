@@ -272,8 +272,9 @@ def test4():
         init = tf.global_variables_initializer()
     sess.run(init)
 
-    save_path = "my_net"
-    if os.path.exists(save_path):
+    save_path = "./train_data/data"
+    if os.listdir("./train_data"):
+        print("train data exist, restore it")
         restore(sess, save_path)
 
     for i in range(1000):
@@ -334,4 +335,4 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
 
 
 if __name__ == '__main__':
-    test1()
+    test4()
