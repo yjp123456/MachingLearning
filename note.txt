@@ -172,4 +172,8 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
         A3C
         PPO
 
-22、pandas.get_dummies(data, prefix=data.columns)可以把一个dataFrame转成one_hot结构，即每一行数据都用一组0和1的序列表示，这样便于用于神经网络
+22、如果数据不是浮点数的话就需要先转换成浮点数才能进行训练，如果数据种类不多的话可以用
+    pandas.get_dummies(data, prefix=data.columns)把一个dataFrame转成one_hot结构，即每一行数据都用一组0和1的序列表示，这样便于用于神经网络
+
+23、神经网络识别成语的话，因为权值都是浮点数，所以输入也是浮点数，因此必须先把输入的四个汉字先转成byte数组，然后再转成float数组作为输入，
+    然后用词典中的成语进行训练

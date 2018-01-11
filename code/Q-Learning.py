@@ -93,9 +93,13 @@ class DeepQNetwork:
         # 创建神经网络。
         self.create_network()
 
-        # 初始化 tensorflow 会话。
+        # 初始化 tensorflow 会话。InteractiveSession与Session区别不大，前者代表默认session, 使用后操作就不需要显示调用sess.run()，
+        # 而可以直接调用 Tensor.eval() and Operation.run()，例如
+        #c = tf.constant(...)
+        #c.eval() #取代之前的sess.run(c)
+        #这边代码中还是使用sess.run()
         self.session = tf.InteractiveSession()
-
+        
         # 初始化 tensorflow 参数。
         self.session.run(tf.initialize_all_variables())
 
