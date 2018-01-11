@@ -338,4 +338,4 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
 
 
 if __name__ == '__main__':
-    test4()
+    test1()

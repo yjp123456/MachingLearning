@@ -177,3 +177,10 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
 23、神经网络识别成语的话，因为权值都是浮点数，所以输入也是浮点数，因此必须先把输入的四个汉字先转成byte数组，然后再转成float数组作为输入，
     然后用词典中的成语进行训练
+
+24、在tensorflow中训练神经网络时，训练到一半，出现Nan in summary histogram for:xxx，这种情况不一定每次都出现，有时候训练时会出现，有时候则不会。
+    出现这种情况，一般是由以下三种情况造成
+    1）Loss的计算采用了cross_entropy = -tf.reduce_sum(y_*tf.log(y))，如果y的值 = 0，则log(y)则会出错，
+       解决方法是，将上式修改为：cross_entropy = -tf.reduce_sum(y_*tf.log(tf.clip_by_value(y,1e-10,1.0)))
+    2）一般是由于优化器的学习率设置不当导致的，此时可以尝试使用更小的学习率进行训练来解决这样的问题
+    3) 训练数据量太少
