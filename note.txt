@@ -184,3 +184,6 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
        解决方法是，将上式修改为：cross_entropy = -tf.reduce_sum(y_*tf.log(tf.clip_by_value(y,1e-10,1.0)))
     2）一般是由于优化器的学习率设置不当导致的，此时可以尝试使用更小的学习率进行训练来解决这样的问题
     3) 训练数据量太少
+
+25、关于隐藏层大小的经验法则是在输入层和输出层之间，为了计算隐藏层大小我们使用一个一般法则：（输入大小+输出大小）*2/3
+    当然也可以一个个试隐藏层大小，找到泛化最好的那个大小

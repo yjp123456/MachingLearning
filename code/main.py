@@ -326,6 +326,7 @@ def max_pool_2x2(x):
     # 而我们希望压缩一下图片也就是参数能少一些从而减小系统的复杂度，pooling 有两种，一种是最大值池化，最大池化相当于选择范围内最大的特征值作为结果
     # 一种是平均值池化，平均池化是选择范围内所有特征值的平均值作为结果，本例采用的是最大值池化tf.max_pool()。
     # 池化的核函数大小为2x2，因此ksize=[1,2,2,1]，步长为2，因此strides=[1,2,2,1]，相当于图片长宽都压缩为原来的一半
+    # ksize = batch, height, width, channels, strides是每个元素的间隔
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
@@ -338,4 +339,4 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
 
 
 if __name__ == '__main__':
-    test1()
+    test2()
