@@ -63,6 +63,7 @@ class LSTMRNN(object):
         lstm_cell = tf.contrib.rnn.BasicLSTMCell(self.cell_size, forget_bias=1.0, state_is_tuple=True)
         with tf.name_scope('initial_state'):
             self.cell_init_state = lstm_cell.zero_state(self.batch_size, dtype=tf.float32)
+        # 如果 inputs 为 (batches, steps, inputs) ==> time_major=False;如果 inputs 为 (steps, batches, inputs) ==> time_major=True;
         self.cell_outputs, self.cell_final_state = tf.nn.dynamic_rnn(
             lstm_cell, self.l_in_y, initial_state=self.cell_init_state,
             time_major=False)  # 初始化状态用的是上一次结果的状态,否则结果就不是连续的曲线图了
@@ -142,7 +143,7 @@ if __name__ == '__main__':
             [model.train_op, model.cost, model.cell_final_state, model.pred],
             feed_dict=feed_dict)
 
-        # plotting
+        # plotting [:TIME_STEPS]代表取下标是0到TIME_STEPS的元素
         plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
         plt.ylim((-1.2, 1.2))  # y轴范围
         plt.draw()
