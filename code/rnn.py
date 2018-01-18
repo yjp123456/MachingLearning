@@ -94,8 +94,9 @@ def RNN(X, weights, biases):
         outputs = tf.unpack(tf.transpose(outputs, [1, 0, 2]))  # states is the last outputs
     else:
         outputs = tf.unstack(tf.transpose(outputs, [1, 0, 2]))
-    results = tf.matmul(outputs[-1], weights['out']) + biases[
-        'out']  # shape = (128, 10)，tf.matmul是矩阵相乘，output是一个三维数组，outputs[-1]是取output最后一个元素，每个元素是一个二维数组
+
+    # shape = (128, 10)，tf.matmul是矩阵相乘，output是一个三维数组，outputs[-1]是取output最后一个元素，每个元素是一个二维数组
+    results = tf.matmul(outputs[-1], weights['out']) + biases['out']
 
     return results
 

@@ -161,6 +161,9 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
      Deep Q Network训练前要先累积一定的状态和 Q 现实对应的数据，然后再把这些数据丢进神经网络去训练神经网络参数
 
+     注意：reward设计要结合具体场景，比如游戏只是到达某一出口，那么reward可以设置成越靠近出口越大，
+     如果是到达某一点，这点周围又有地雷这种东西，那么reward就不能设置成越靠近越大，而是到达这一点才有对应的reward
+
 21、算法选择上可以先考虑动作是否连续，连续动作 (动作是一个连续值, 比如旋转角度)
         Policy gradient
         DDPG
