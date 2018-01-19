@@ -20,6 +20,7 @@ class DeepQNetwork:
             batch_size=32,
             e_greedy_increment=None,
             output_graph=False,
+            double_q=True
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -30,6 +31,7 @@ class DeepQNetwork:
         self.memory_size = memory_size
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
+        self.double_q = double_q#是否选择double Q
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
 
         # total learning step
@@ -40,9 +42,11 @@ class DeepQNetwork:
 
         # consist of [target_net, evaluate_net]
         self._build_net()
+
+        # 替换老的神经网络参数
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
-        self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
+        self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]  # tf.assign(A, new_number)
 
         self.sess = tf.Session()
 
@@ -83,7 +87,8 @@ class DeepQNetwork:
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
         # ------------------ build target_net ------------------
-        # 求下一个状态对应的Q估计值，输入起始状态，得到下一个状态对应所有action的reward,和上面的神经网络结构一样
+        # 用于求Q现实，即记忆中该状态对应的奖励，相当于历史经验，和上面的神经网络结构一样，但是权值和偏移都是老的，
+        # 当learn_step_counter到达一定值时才更新神经网络参数
         self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input
         with tf.variable_scope('target_net'):
             # c_names(collections_names) are the collections to store variables
@@ -91,7 +96,6 @@ class DeepQNetwork:
 
             # first layer. collections is used later when assign to target net
             with tf.variable_scope('l1'):
-                # tf.get_variable使用的是q_eval里面的权值和偏移，所以q_next和q_eval结构是一样的，只是为了显示清晰，所以分开来写
                 w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
                 l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
@@ -127,7 +131,7 @@ class DeepQNetwork:
         return action
 
     def learn(self):
-        # check to replace target parameters
+        # 当learn_step_counter到达一定值时才更新q_next神经网络参数
         if self.learn_step_counter % self.replace_target_iter == 0:
             self.sess.run(self.replace_target_op)
             print('\ntarget_params_replaced\n')
@@ -139,22 +143,25 @@ class DeepQNetwork:
             sample_index = np.random.choice(self.memory_counter, size=self.batch_size)
         batch_memory = self.memory[sample_index, :]
 
-        q_next, q_eval = self.sess.run(
+        # 这一段和 DQN 不一样
+        q_next, q_eval4next = self.sess.run(
             [self.q_next, self.q_eval],
-            feed_dict={
-                self.s_: batch_memory[:, -self.n_features:],  # 最后一列是下一个状态
-                self.s: batch_memory[:, :self.n_features],  # 第一列是起始状态
-            })
-
-        # change q_target w.r.t q_eval's action
+            feed_dict={self.s_: batch_memory[:, -self.n_features:],  # next observation
+                       self.s: batch_memory[:, -self.n_features:]})  # next observation
+        q_eval = self.sess.run(self.q_eval, {self.s: batch_memory[:, :self.n_features]})
         q_target = q_eval.copy()
-
         batch_index = np.arange(self.batch_size, dtype=np.int32)
-        eval_act_index = batch_memory[:, self.n_features].astype(int)  # 采取的action
-        reward = batch_memory[:, self.n_features + 1]  # 得到的reward
+        eval_act_index = batch_memory[:, self.n_features].astype(int)
+        reward = batch_memory[:, self.n_features + 1]
+
+        if self.double_q:  # 如果是 Double DQN
+            max_act4next = np.argmax(q_eval4next, axis=1)  # q_eval 得出的最高奖励动作
+            selected_q_next = q_next[batch_index, max_act4next]  # Double DQN 选择 q_next 依据 q_eval 选出的动作
+        else:  # 如果是 Natural DQN
+            selected_q_next = np.max(q_next, axis=1)  # natural DQN
 
         # Q现实 = R + γ*Max[Q(s`, all actions)]，这边是按整个batch更新Q(s,a)
-        q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
+        q_target[batch_index, eval_act_index] = reward + self.gamma * selected_q_next
 
         """
         For example in this batch I have 2 samples and 3 actions:

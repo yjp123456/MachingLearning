@@ -47,6 +47,6 @@ if __name__ == "__main__":
                       memory_size=2000,
                       # output_graph=True
                       )
-    env.after(100, run_maze)
+    env.after(100, run_maze)  # 定时器
     env.mainloop()
     RL.plot_cost()
