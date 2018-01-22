@@ -141,15 +141,14 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
      s2   -4    2
 
      那么Q(s1,a2)现实值就等于 R + γ*Max[Q(s`, all actions)]，Q(s1,a2)预估值等于Q(s1,a2)，R代表眼前的奖励，γ代表对以往经验的重视程度，
-     γ越大，就会越重视以往经验，属于回合更新，γ=0时只能看到眼前的奖励R，属于单步更新
+     γ越大，就会越重视以往经验，γ=0时只能看到眼前的奖励 R
      最终Q(s1,a2) = 老Q(s1,a2) + α*（现实值 - 估计值）
 
 
 18、Sarsa也是基于价值的学习算法，同样拿上面的表格举例：
-    Q(s1,a2)现实值就等于 R + γ*Q(s2，a2)，Q(s1,a2)预估值等于Q(s1,a2),γ=1时是回合更新，即把后续步骤都考虑进来再更新，γ=0时是单步更新，即与后面的步骤没有关系，
+    Q(s1,a2)现实值就等于 R + γ*Q(s2，a2)，Q(s1,a2)预估值等于Q(s1,a2),γ=1时表示对历史经验比较看重，γ=0时表示不看历史经验，
     最终Q(s1,a2) = 老Q(s1,a2) + α*（现实值 - 估计值）
-    Sarsa与 Q learning不同的是它在 s2 这一步估算的动作也是接下来要做的动作，不像Q learning先观看一下在 s2 上选取哪一个动作会带来最大的奖励，
-    但是在真正要做决定时, 却不一定会选取到那个带来最大奖励的动作
+    Sarsa与 Q learning不同的是Sarsa每执行一个动作后就会把下一个状态以及action决定好，不像Q-learning只给出下一个状态,action还没决定好
 
 19、现实中Q表格状态非常多，所以无法全部存储，一种方式是利用神经网络，每次输入一个状态s，然后输出所有行为对应的值，再从中选取就行，
     神经网络每次更新的参数就是老的 NN(Neural Network) 参数 加学习率 alpha 乘以 Q 现实 和 Q 估计 的差距：w = 老w + α*（现实值 - 估计值）
@@ -225,3 +224,22 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 29、Dueling 算法：
     它将每个动作的 Q 拆分成了 state 的 Value 加上 每个动作的 Advantage，即Q = V(s) + A(s,a)
     因为有时候在某种 state, 无论做什么动作, 对下一个 state 都没有多大影响.
+
+
+30、Policy Gradients是基于概率的一种算法，适合连续的动作，比如机器手臂旋转，它选择下一个动作不是看奖励值，而是选取最大概率的动作，
+    那怎样收敛呢，这个依靠的是奖励的反馈，比如某种状态下选择一个动作获得奖励比较高，那么下次选择这个动作的概率就会变大，loss如下：
+
+    neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=all_act, labels=self.tf_acts)
+    loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # (vt = 本reward + 衰减的未来reward) 引导参数的梯度下降
+
+    neg_log_prob求所选 action 的概率 -log 值，概率越小它越大，可以理解成 action 概率估计值 all_act 和输入的实际概率 tf_acts 的误差，即概率分布误差，
+    neg_log_prob * self.tf_vt 越小说明概率大的action对应的reward比概率小对应的reward大，这就是收敛的目的
+
+    vt = 本reward + 衰减的未来reward，它不仅包括了自己的reward，还考虑了一个回合之前action的reward,作用就是告诉模型当前采取动作的方向是对的还是错的，
+    如果 vt 小, 或者是负的, 就说明这个梯度下降是一个错误的方向, 我们应该向着另一个方向更新参数,如果这个 vt 是正的, 或很大,
+    vt 就会称赞 cross-entropy 出来的梯度, 并朝着这个方向梯度下降
+
+    对比起以价值为基础的方法, Policy Gradients 直接输出动作的最大好处就是, 它能在一个连续区间内挑选动作, 而基于值的, 比如 Q-learning,
+    它如果在无穷多的动作中计算价值, 从而选择行为, 这可吃不消
+
+    Policy Gradients一般是基于回合更新
