@@ -137,7 +137,8 @@ class DeepQNetwork:
             e_greedy_increment=None,
             output_graph=False,
             double_q=True,
-            prioritized=True
+            prioritized=True,
+            dueling=True
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -148,8 +149,9 @@ class DeepQNetwork:
         self.memory_size = memory_size
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
-        self.double_q = double_q  # 是否选择double Q
+        self.double_q = double_q  # 是否选择double Q，即用最新参数预估Q现实最大奖励对应的action
         self.prioritized = prioritized  # 是否选择按优先级选取训练样本
+        self.dueling = dueling  # 是否选择Q = V(s) + A(s,a)
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
 
         # total learning step
@@ -180,6 +182,36 @@ class DeepQNetwork:
         self.cost_his = []
 
     def _build_net(self):
+        def build_layers(s, c_names, n_L1, w_initializer, b_initializer):
+            with tf.variable_scope('L1'):
+                w1 = tf.get_variable('w1', [self.n_features, n_L1], initializer=w_initializer, collections=c_names)
+                b1 = tf.get_variable('b1', [1, n_L1], initializer=b_initializer, collections=c_names)
+                L1 = tf.nn.relu(tf.matmul(s, w1) + b1)
+
+            if self.dueling:
+                # Dueling DQN
+                with tf.variable_scope('Value'):
+                    w2 = tf.get_variable('w2', [n_L1, 1], initializer=w_initializer, collections=c_names)
+                    b2 = tf.get_variable('b2', [1, 1], initializer=b_initializer, collections=c_names)
+                    self.V = tf.matmul(L1, w2) + b2
+
+                with tf.variable_scope('Advantage'):
+                    w2 = tf.get_variable('w2', [n_L1, self.n_actions], initializer=w_initializer, collections=c_names)
+                    b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+                    self.A = tf.matmul(L1, w2) + b2
+
+                with tf.variable_scope('Q'):
+                    # Q = V(s) + A(s,a),每个action对应的值都会加上V
+                    # 减去A均值的原因是防止 Q = A(s,a)，即V学成0了，而取均值每次都是不一样，V就不会为0
+                    out = self.V + (self.A - tf.reduce_mean(self.A, axis=1, keep_dims=True))
+            else:
+                with tf.variable_scope('Q'):
+                    w2 = tf.get_variable('w2', [n_L1, self.n_actions], initializer=w_initializer, collections=c_names)
+                    b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+                    out = tf.matmul(L1, w2) + b2
+
+            return out
+
         # ------------------ build evaluate_net ------------------
         # 求Q估计值，输入起始状态，得到这个状态对应所有action的reward
         self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
@@ -188,25 +220,16 @@ class DeepQNetwork:
             self.ISWeights = tf.placeholder(tf.float32, [None, 1], name='IS_weights')
         with tf.variable_scope('eval_net'):
             # c_names(collections_names) are the collections to store variables
-            c_names, n_l1, w_initializer, b_initializer = \
+            c_names, n_L1, w_initializer, b_initializer = \
                 ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 10, \
                 tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)  # config of layers
 
-            # first layer. collections is used later when assign to target net
-            with tf.variable_scope('l1'):
-                w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
-                b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-                l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
-
-            # second layer. collections is used later when assign to target net
-            with tf.variable_scope('l2'):
-                w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
-                b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-                self.q_eval = tf.matmul(l1, w2) + b2
+            self.q_eval = build_layers(self.s, c_names, n_L1, w_initializer, b_initializer)
 
         with tf.variable_scope('loss'):
             if self.prioritized:
-                self.abs_errors = tf.reduce_sum(tf.abs(self.q_target - self.q_eval), axis=1)  # TD-error，作为优先级值
+                # TD-error，作为优先级值，axis=1代表将每行求和，即所有action对应值的和
+                self.abs_errors = tf.reduce_sum(tf.abs(self.q_target - self.q_eval), axis=1)
                 self.loss = tf.reduce_mean(self.ISWeights * tf.squared_difference(self.q_target, self.q_eval))
             else:
                 self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
@@ -221,17 +244,7 @@ class DeepQNetwork:
             # c_names(collections_names) are the collections to store variables
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
-            # first layer. collections is used later when assign to target net
-            with tf.variable_scope('l1'):
-                w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
-                b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-                l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
-
-            # second layer. collections is used later when assign to target net
-            with tf.variable_scope('l2'):
-                w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
-                b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-                self.q_next = tf.matmul(l1, w2) + b2
+            self.q_next = build_layers(self.s_, c_names, n_L1, w_initializer, b_initializer)
 
     def store_transition(self, s, a, r, s_):
         if self.prioritized:  # prioritized replay
