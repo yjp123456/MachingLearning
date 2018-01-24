@@ -88,6 +88,7 @@ class DDPG(object):
         with tf.variable_scope(scope):
             net = tf.layers.dense(s, 30, activation=tf.nn.relu, name='l1', trainable=trainable)
             a = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, name='a', trainable=trainable)
+            # tanh范围是(-1,1),这边乘于动作最大值是为了还原真实动作值
             return tf.multiply(a, self.a_bound, name='scaled_a')
 
     def _build_c(self, s, a, scope, trainable):
@@ -101,14 +102,15 @@ class DDPG(object):
 
 
 ###############################  training  ####################################
-
+# Openai Gym 的 Pendulum-v0，state 是 3 维连续的表示杆的位置方向信息，action 是 1 维的连续动作，大小是 -2.0 到 2.0，
+# 表示对杆施加的力和方向。目标是让杆保持直立，所以 reward 在杆保持直立不动的时候最大
 env = gym.make(ENV_NAME)
 env = env.unwrapped
 env.seed(1)
 
-s_dim = env.observation_space.shape[0]
-a_dim = env.action_space.shape[0]
-a_bound = env.action_space.high
+s_dim = env.observation_space.shape[0]  # 状态维度
+a_dim = env.action_space.shape[0]  # 动作维度
+a_bound = env.action_space.high  # 动作取值范围最大值
 
 ddpg = DDPG(a_dim, s_dim, a_bound)
 
