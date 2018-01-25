@@ -22,6 +22,7 @@ ENV_NAME = 'Pendulum-v0'
 
 class DDPG(object):
     def __init__(self, a_dim, s_dim, a_bound, ):
+        # np.zeros((2, 1))#生成2行1列的零矩阵
         self.memory = np.zeros((MEMORY_CAPACITY, s_dim * 2 + a_dim + 1), dtype=np.float32)
         self.pointer = 0
         self.sess = tf.Session()
@@ -62,7 +63,8 @@ class DDPG(object):
         self.sess.run(tf.global_variables_initializer())
 
     def choose_action(self, s):
-        return self.sess.run(self.a, {self.S: s[np.newaxis, :]})[0]  # 类似Policy Gradients，选取动作比较快，适合连续动作
+        # 在角度的区间内选择一个动作，这样输出就只有一维了，体现DDPG比DQN的优势
+        return self.sess.run(self.a, {self.S: s[np.newaxis, :]})[0]
 
     def learn(self):
         # soft target replacement
