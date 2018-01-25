@@ -22,7 +22,7 @@ ENV_NAME = 'Pendulum-v0'
 
 class DDPG(object):
     def __init__(self, a_dim, s_dim, a_bound, ):
-        # np.zeros((2, 1))#生成2行1列的零矩阵
+        # np.zeros((2, 1))生成2行1列的零矩阵
         self.memory = np.zeros((MEMORY_CAPACITY, s_dim * 2 + a_dim + 1), dtype=np.float32)
         self.pointer = 0
         self.sess = tf.Session()
@@ -126,7 +126,9 @@ for i in range(MAX_EPISODES):
 
         # Add exploration noise
         a = ddpg.choose_action(s)
-        a = np.clip(np.random.normal(a, var), -2, 2)  # add randomness to action selection for exploration
+
+        # 生成一个范围是[-2,2]的高斯分布随机数，a是均值，var是标准差，这样能扩大探索范围，不会太单一
+        a = np.clip(np.random.normal(a, var), -2, 2)
         s_, r, done, info = env.step(a)
 
         ddpg.store_transition(s, a, r / 10, s_)
