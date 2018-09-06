@@ -9,7 +9,7 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 2、安装tensorflow，用于机器学习，目前只支持Python 3.5/3.6 (64bit) 版本
    # CPU 版的
    pip3 install --upgrade tensorflow
-   # GPU 版的
+   # GPU 版的（GPU版的还要安装CUDA,比较麻烦）
    pip3 install --upgrade tensorflow-gpu
    
    注意：window安装前检查电脑是否有 Windows 的 Microsoft Visual C++ 2015 redistributable update 3 64 bit
