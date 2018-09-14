@@ -83,7 +83,7 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
    原始数据大小一样，然后经过池化来压缩卷积层数据，减少系统复杂度，最后定义一个分类器将卷积结果进行分类就能得到预估值了
 
    卷积神经网络中的一个特点就是权值共享，即每个滤波器在扫描图像的每个区域时，滤波器本身是不变的，
-   假如有一张输入图像，先假定它是单通道的灰度图像，现在有一个[3 × 3]的卷积核，
+   假如有一张输入图像，先假定它是单通道的灰度图像，现在有一tf.train.Saver个[3 × 3]的卷积核，
    卷积核权重假如是[1，0，1；0，1，0；0，0，1]。我现在从左到右，从上到下，用这个卷积核在输入图像上滑动，每到一处，
    都是用同样的权重，对图像进行滤波，得到一个特征图。这就是所谓的权值
 
@@ -288,3 +288,22 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
           5）最终目的是让损失函数在θ处的偏导数接近0，即到达山脚。当然这样走下去，有可能我们不能走到山脚，而是到了某一个局部的山峰低处，
              所以梯度下降不一定能够找到全局的最优解，有可能是一个局部最优解。当然，如果损失函数是凸函数，梯度下降法得到的解就一定是全局最优解
+
+34、将TensorFlow训练的模型移植到Android手机，在模型训练结束后的代码位置，添加下述两句代码，可将模型保存为.pb文件
+    self.output_graph_def = tf.graph_util.convert_variables_to_constants(self.sess, self.sess.graph_def,
+                                                                           ['eval_net/Q/%s' % self.output_node])
+    注意：
+    1）形参output_node_names用于指定输出的节点名称,必须指定，并且如果有name_scope或者variable_scope需要加上前缀
+    2）改方法调用的地方需要放到训练结束的时候调用，因为调用的时候是读取当前的sess参数，如果一开始就调用，参数都是空的
+    with tf.gfile.FastGFile('model\mnist.pb', mode='wb') as f:
+        f.write(output_graph_def.SerializeToString())
+    第一个参数用于指定输出的文件存放路径、文件名及格式。我把它放在与代码同级目录的model文件下，取名为mnist.pb
+
+    第二个参数 mode用于指定文件操作的模式，’wb’中w代表写文件，b代表将数据以二进制方式写入文件
+    如果不指明‘b’，则默认会以文本txt方式写入文件。现在TF还不支持对文本格式.pb文件的解析，在调用时会出现报错。
+
+    注：
+    1)、不能使用 tf.train.write_graph()保存模型，因为它只是保存了模型的结构，并不保存训练完毕的参数值
+    2)、不能使用 tf.train.saver()保存模型，因为它只是保存了网络中的参数值，并不保存模型的结构。
+    很显然，我们需要的是既保存模型的结构，又保存模型中每个参数的值。以上两者皆不符合。
+    具体参考：https://blog.csdn.net/masa_fish/article/details/56049710?winzoom=1

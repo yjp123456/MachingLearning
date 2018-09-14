@@ -1,14 +1,12 @@
-import tensorflow as tf
-import numpy as np
-import pandas as pd
-from urllib.request import urlretrieve
-import unicodedata
 import os
+
 import matplotlib.pyplot as plt
-from tensorflow.examples.tutorials.mnist import input_data
-from sklearn.datasets import load_digits
+import numpy as np
+import tensorflow as tf
 from sklearn.cross_validation import train_test_split
+from sklearn.datasets import load_digits
 from sklearn.preprocessing import LabelBinarizer
+from tensorflow.examples.tutorials.mnist import input_data
 
 
 def add_layer(inputs, in_size, out_size, n_layer, keep_prob=1, activation_function=None, norm=False):
@@ -340,3 +338,4 @@ def compute_accuracy2(sess, xs, ys, prediction, keep_prob, v_xs, v_ys):
 
 if __name__ == '__main__':
     test2()
+
