@@ -151,7 +151,7 @@ class DeepQNetwork:
         self.double_q = double_q  # 是否选择double Q，即用最新参数预估Q现实最大奖励对应的action
         self.prioritized = prioritized  # 是否选择按优先级选取训练样本
         self.dueling = dueling  # 是否选择Q = V(s) + A(s,a)
-        self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+        self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max  # 选择动作从模型里面选择的概率
 
         # total learning step
         self.learn_step_counter = 0
@@ -218,6 +218,7 @@ class DeepQNetwork:
         # ------------------ build evaluate_net ------------------
         # 求Q估计值，输入起始状态，得到这个状态对应所有action的reward
         self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
+
         self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
         if self.prioritized:
             self.ISWeights = tf.placeholder(tf.float32, [None, 1], name='IS_weights')

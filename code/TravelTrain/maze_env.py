@@ -14,7 +14,7 @@ MAZE_W = 4  # grid width
 
 action_test = [[1, 2], [1, 4], [2, 2], [2, 4], [4, 1]]
 
-action_reward = {"1,2": 1, "1,4": 2, "2,2": 3, "2,4": 4, "4,1": 5}
+action_reward = {"1,2": 1, "1,4": 2, "2,2": 5, "2,4": 4, "4,1": 3}
 
 
 class Maze(tk.Tk, object):
