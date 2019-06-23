@@ -30,8 +30,8 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
       w += -Learning rate * dx / √￣v
       AdaGrad相当于给他加了双不好走的鞋子，鞋子成为走弯路的阻力
    4）RMSProp:
-      v = b1 * v + (1 - b1) * dx^2  //v代表上一次训练的值
-      w += -Learning rate * dx / √￣v
+      v(t) = b1 * v(t-1) + (1 - b1) * dx^2  //v代表上一次训练的值
+      w += -Learning rate * dx / √￣v(t)
       RMSProp合并了Momentum和AdaGrad两种，但是合并并不完全
    4）Adam:
       m(t) = b1 * m(t-1) + (1 - b1) * dx
