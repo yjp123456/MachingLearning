@@ -1,46 +1,46 @@
 https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
 
-1����װnumpy��������������ߴ������Լ���������㷨
-   # ʹ�� python 3+:
+1、安装numpy，里面包含各种线代矩阵以及随机数等算法
+   # 使用 python 3+:
    pip3 install numpy
-   # ʹ�� python 2+:
+   # 使用 python 2+:
    pip install numpy
 
-2����װtensorflow�����ڻ���ѧϰ��Ŀǰֻ֧��Python 3.5/3.6 (64bit) �汾
-   # CPU ���
+2、安装tensorflow，用于机器学习，目前只支持Python 3.5/3.6 (64bit) 版本
+   # CPU 版的
    pip3 install --upgrade tensorflow
-   # GPU ��ģ�GPU��Ļ�Ҫ��װCUDA,�Ƚ��鷳��
+   # GPU 版的（GPU版的还要安装CUDA,比较麻烦）
    pip3 install --upgrade tensorflow-gpu
    
-   ע�⣺window��װǰ�������Ƿ��� Windows �� Microsoft Visual C++ 2015 redistributable update 3 64 bit
+   注意：window安装前检查电脑是否有 Windows 的 Microsoft Visual C++ 2015 redistributable update 3 64 bit
 
-3����װmatplotlib�����ڻ�ͼ
+3、安装matplotlib，用于绘图
    python -mpip install -U pip
    python -mpip install -U matplotlib
 
-4������������ѧϰ��
-   1��SGD������������������ݲ��С��С����ÿ��ʹ��������ѵ�����ٶ�����
-   2��Momentum: 
-      m = b1 * m - Learning rate * dx
-      w += m
-      ��ͳ��ʽ��w += -Learning rate * dx����������Ȩֵ�ۼ���һ������ѧϰ�ʳ���У��ֵ
-      ���ֻ��ߺܶ���·���Ƚ�����Momentum�൱�ڼ��˸�б�£��������µĹ����������ߵ���·����
-   3��AdaGrad��
-      v += dx^2
-      w += -Learning rate * dx / �̣�v
-      AdaGrad�൱�ڸ�������˫�����ߵ�Ь�ӣ�Ь�ӳ�Ϊ����·������
-   4��RMSProp:
-      v = b1 * v + (1 - b1) * dx^2
-      w += -Learning rate * dx / �̣�v
-      RMSProp�ϲ���Momentum��AdaGrad���֣����Ǻϲ�������ȫ
-   4��Adam:
-      m = b1 * m + (1 - b1) * dx
-      v = b2 * v + (1 - b2) * dx^2
-      w += -Learning rate * m / �̣�v
-      Adam�൱��Momentum��AdaGrad�Ľ�ϣ�ʵ��֤���������ʱ��ʹ��adam�����ֿ��ֺõĴﵽĿ��
+4、加速神经网络学习：
+   1）SGD：最基础方法，把数据拆成小批小批，每次使用批数据训练，速度最慢
+   2）Momentum: 
+      m(t) = b1 * m(t-1) - Learning rate * dx //m（t-1)代表上一次训练的值
+      w += m(t)
+      传统方式是w += -Learning rate * dx，这种是在权值累加上一个负的学习率乘以校正值
+      这种会走很多弯路，比较慢，Momentum相当于加了个斜坡，依靠向下的惯性来让他走的弯路变少
+   3）AdaGrad：
+      v += dx^2 //v代表上一次训练的值
+      w += -Learning rate * dx / √￣v
+      AdaGrad相当于给他加了双不好走的鞋子，鞋子成为走弯路的阻力
+   4）RMSProp:
+      v = b1 * v + (1 - b1) * dx^2  //v代表上一次训练的值
+      w += -Learning rate * dx / √￣v
+      RMSProp合并了Momentum和AdaGrad两种，但是合并并不完全
+   4）Adam:
+      m(t) = b1 * m(t-1) + (1 - b1) * dx
+      v(t) = b2 * v(t-1) + (1 - b2) * dx^2
+      w += -Learning rate * m(t) / √￣v(t)
+      Adam相当于Momentum和AdaGrad的结合，实验证明，大多数时候，使用adam都能又快又好的达到目标
 
-5���Ż�����tensorflowĿǰ�������Ż������ֱ��ǣ�
-   GradientDescentOptimizer ��SGD��
+5、优化器，tensorflow目前有七种优化器，分别是：
+   GradientDescentOptimizer （SGD）
    AdagradOptimizer 
    AdagradDAOptimizer 
    MomentumOptimizer 
@@ -48,262 +48,262 @@ https://morvanzhou.github.io/tutorials/machine-learning/tensorflow
    FtrlOptimizer 
    RMSPropOptimizer
 
-6��ģ��չʾ��
+6、模型展示：
     sess = tf.Session() # get session
-    with tf.name_scope(layer_name) # ��Ҫչʾ�Ľڵ���Ҫ���������������չʾ�ڵ����ƣ�Ȼ���ڿ��ͼ�о��ܿ�������ڵ���
+    with tf.name_scope(layer_name) # 需要展示的节点需要用这个方法来定义展示节点名称，然后在框架图中就能看到这个节点了
     writer = tf.summary.FileWriter("logs/", sess.graph)
-    ����graph��������Ŀ����Ϣ�ռ�������Ȼ�����/logsĿ¼��
-    �����н���logsĿ¼����·����ִ������"tensorboard --logdir logs"�������һ��url�������url��������ϴ򿪾��ܿ���
-    ���ͼ�ˣ����ͼ��˫������չ����ϸͼ
+    利用graph来将定义的框架信息收集起来，然后放在/logs目录下
+    命令行进入logs目录所在路径，执行命令"tensorboard --logdir logs"后会生成一个url，将这个url在浏览器上打开就能看到
+    框架图了，框架图上双击可以展开详细图
 
-7����¼Ȩֵ��ƫ��ֵ������ı仯���ߣ�
+7、记录权值、偏移值、输出的变化曲线：
     writer = tf.summary.FileWriter("logs/", sess.graph)  # tensorflow >=0.12
-    merged = tf.summary.merge_all()  # tensorflow >= 0.12�������е� summaries �ϲ���һ��
-    biases = tf.Variable(tf.zeros([1, out_size]) + 0.1, name='b')  # ƫ�ƣ�tf.zeros([n, m])��������һ�� n x m ����
-    # tf.histogram_summary(layer_name+'/biase',biases)   # tensorflow 0.12 ���°��
+    merged = tf.summary.merge_all()  # tensorflow >= 0.12，把所有的 summaries 合并到一起
+    biases = tf.Variable(tf.zeros([1, out_size]) + 0.1, name='b')  # 偏移，tf.zeros([n, m])代表生成一个 n x m 矩阵
+    # tf.histogram_summary(layer_name+'/biase',biases)   # tensorflow 0.12 以下版的
     tf.summary.histogram('/value', biases)  # Tensorflow >= 0.12
 
-    tf.summary���Ǽ�¼��Щֵ�ı仯���̣�histogram��������HISTOGRAM��ǩ�£���Ҫ��¼��ʱ����ú�����    
+    tf.summary就是记录这些值的变化过程，histogram代表放在HISTOGRAM标签下，需要记录的时候调用函数：    
     rs = sess.run(merged, feed_dict={xs: x_data, ys: y_data})
-    writer.add_summary(rs, i) # д��log
+    writer.add_summary(rs, i) # 写入log
 
-8����ֹ����ϣ�
-   ��һ��ר����������������滯�ķ���, ���� dropout. ��ѵ����ʱ��, ����������Ե�һЩ��Ԫ�������� , 
-   ������������á���������. ��һ����������������ѵ��һ�Σ�ʹ��dropout�������£�
+8、防止过拟合：
+   有一种专门用在神经网络的正规化的方法, 叫作 dropout. 在训练的时候, 我们随机忽略掉一些神经元和神经联结 , 
+   是这个神经网络变得”不完整”. 用一个不完整的神经网络训练一次，使用dropout方法如下：
     Wx_plus_b = tf.add(tf.matmul(inputs, Weights), biases)  # y = wx + b
     Wx_plus_b = tf.nn.dropout(Wx_plus_b, keep_prob)
 
-    keep_prob�Ǳ����ʣ�����ÿ�ν�������ı�����keep_prob=1��û��dropoutЧ���ˣ�
-    ʹ��dropout���龰��ѵ�����ݱȽ��ٵ�����±Ƚ����ԣ�ѵ�����ݶ�Ļ�Ч��������
+    keep_prob是保留率，就是每次结果保留的比例，keep_prob=1就没有dropout效果了，
+    使用dropout的情景是训练数据比较少的情况下比较明显，训练数据多的话效果不明显
 
-9�����������磺
-   ͨ�����������ͳػ��������ȡ���������о�����ͨ��ɨ�貽��Ϊ1������ÿ���ƶ����붼��1��ɨ����̾�����
-   ���ֵ�Ͳ��ͼƬ���Ͻǿ�ʼ��������ͼƬ�������������������һ������ֵ������ֵ�ļ����ǽ��������е�ÿ��ֵ��ɨ�������Ӧ��ֵ���
-   Ȼ��������˽����͵õ�һ���µ�ֵ����Ϊ�ƶ�����Ϊ1�����Դ����ң����ϵ����ƶ����������ɵ��������С�ͺ�
-   ԭʼ���ݴ�Сһ����Ȼ�󾭹��ػ���ѹ�����������ݣ�����ϵͳ���Ӷȣ������һ��������������������з�����ܵõ�Ԥ��ֵ��
+9、卷积神经网络：
+   通过定义卷积层和池化来逐层提取特征，其中卷积层通常扫描步伐为1，就是每次移动距离都是1，扫描过程就是像
+   拿手电筒从图片左上角开始遍历整张图片，遍历到的区域会生成一个特征值，特征值的计算是将卷积核中的每个值和扫描区域对应的值相乘
+   然后将所有相乘结果求和得到一个新的值，因为移动距离为1，所以从左到右，从上到下移动过程中生成的特征层大小就和
+   原始数据大小一样，然后经过池化来压缩卷积层数据，减少系统复杂度，最后定义一个分类器将卷积结果进行分类就能得到预估值了
 
-   �����������е�һ���ص����Ȩֵ��������ÿ���˲�����ɨ��ͼ���ÿ������ʱ���˲��������ǲ���ģ�
-   ������һ������ͼ���ȼٶ����ǵ�ͨ���ĻҶ�ͼ��������һtf.train.Saver��[3 �� 3]�ľ����ˣ�
-   ������Ȩ�ؼ�����[1��0��1��0��1��0��0��0��1]�������ڴ����ң����ϵ��£������������������ͼ���ϻ�����ÿ��һ����
-   ������ͬ����Ȩ�أ���ͼ������˲����õ�һ������ͼ���������ν��Ȩֵ
+   卷积神经网络中的一个特点就是权值共享，即每个滤波器在扫描图像的每个区域时，滤波器本身是不变的，
+   假如有一张输入图像，先假定它是单通道的灰度图像，现在有一tf.train.Saver个[3 × 3]的卷积核，
+   卷积核权重假如是[1，0，1；0，1，0；0，0，1]。我现在从左到右，从上到下，用这个卷积核在输入图像上滑动，每到一处，
+   都是用同样的权重，对图像进行滤波，得到一个特征图。这就是所谓的权值
 
-10������ѵ��������ݣ�
-    ÿ�����н�����ͨ��������뱣��sess����
+10、保存训练结果数据：
+    每次运行结束后通过下面代码保存sess数据
     saver = tf.train.Saver()
-    save_path = saver.save(sess, "my_net/save_net.ckpt")#����ѵ�����
+    save_path = saver.save(sess, "my_net/save_net.ckpt")#保存训练结果
 
-    �´�����ʱ�ȵ������淽�����ȼ����ϴ����ݣ�Ȼ���ٿ�ʼѵ��
+    下次运行时先调用下面方法来先加载上次数据，然后再开始训练
     saver.restore(sess, "my_net/save_net.ckpt")
 
-11��ѭ��������RNN�����������࣬�����������ǽ�����ǰ�����ݵĻ����ϣ�������� Data0 ��ʱ��, ���ǰѷ�������������.
-    Ȼ�󵱷��� data1��ʱ��, RNN������µļ���, �����¼�����ϼ�����û����ϵ��. ���Ǿͼ򵥵İ��ϼ�����ù���, һ�����.
-    ������������������������ , RNN�ͻ��֮ǰ�ļ��䶼�ۻ�����, һ�����
+11、循环神经网络RNN可以用来分类，它分析数据是建立在前面数据的基础上，比如分析 Data0 的时候, 我们把分析结果存入记忆.
+    然后当分析 data1的时候, RNN会产生新的记忆, 但是新记忆和老记忆是没有联系的. 我们就简单的把老记忆调用过来, 一起分析.
+    如果继续分析更多的有序数据 , RNN就会把之前的记忆都累积起来, 一起分析
 
-    ����RNN�и��׶��ǻ�����ݶ���ʧ�����ݶȱ�ը���ڷ��򴫵ݵõ�������ʱ��, ����ÿһ���������һ���Լ��Ĳ��� W.
-    ������ W ��һ��С��1 ����, ����0.9. ���0.9 ���ϳ������, ������ʼʱ���Ҳ����һ���ӽ��������,
-    ���Զ��ڳ�ʼʱ��, ����൱�ھ���ʧ��. ���ǰ������������ݶ���ʧ�����ݶ���ɢ Gradient vanishing.
-    ��֮��� W ��һ������1 ����, ����1.1 �����۳�, �����������������, RNN������������������, ����������ǽ�����ȱ�ը
+    不过RNN有个弊端是会出现梯度消失或者梯度爆炸，在反向传递得到的误差的时候, 他在每一步都会乘以一个自己的参数 W.
+    如果这个 W 是一个小于1 的数, 比如0.9. 这个0.9 不断乘以误差, 误差传到初始时间点也会是一个接近于零的数,
+    所以对于初始时刻, 误差相当于就消失了. 我们把这个问题叫做梯度消失或者梯度弥散 Gradient vanishing.
+    反之如果 W 是一个大于1 的数, 比如1.1 不断累乘, 则到最后变成了无穷大的数, RNN被这无穷大的数撑死了, 这种情况我们叫做剃度爆炸
 
-    LSTM ����Ϊ�˽����������������. LSTM ����ͨ RNN ���, ���������������. (�������, �������, ���ǿ���). ����, LSTM RNN �ڲ�������������ģ�
-    ������һ������ȫ�ֵļ���, Ϊ�˷�������, ���ǰ�������ɵ�Ӱ����Ϸ���е����߾���. ��ԭ���� RNN ��ϵ���Ƿ��߾���.
-    ����������������ԭʼ�� RNN ��ϵ��, �����ȿ� ���뷽�� , �����ʱ�ķ��߾�����ھ��ս��ʮ����Ҫ, ������ƾͻὫ������߾��鰴��Ҫ�̶� д�����߾�����з���.
-    �ٿ����Ƿ���, �����ʱ�ķ��߾�����������Ƕ�֮ǰ������뷨, ��ô���ǿ��ƾͻὫ֮ǰ��ĳЩ���߾�������, �������滻�����ڵ��¾���.
-    ���� ���߾���ĸ��¾�ȡ������������ǿ���. �����������, ������ƻ����Ŀǰ�����߾���ͷ��߾����ж�Ҫ����ĵ�����ʲô.������Щ���ƻ���,
-    LSTM �����ӻ�����˥�˵���ҩ, ���Դ������õĽ��
+    LSTM 就是为了解决这个问题而诞生的. LSTM 和普通 RNN 相比, 多出了三个控制器. (输入控制, 输出控制, 忘记控制). 现在, LSTM RNN 内部的情况是这样的：
+    他多了一个控制全局的记忆, 为了方便理解, 我们把它想象成电影或游戏当中的主线剧情. 而原本的 RNN 体系就是分线剧情.
+    三个控制器都是在原始的 RNN 体系上, 我们先看 输入方面 , 如果此时的分线剧情对于剧终结果十分重要, 输入控制就会将这个分线剧情按重要程度 写入主线剧情进行分析.
+    再看忘记方面, 如果此时的分线剧情更改了我们对之前剧情的想法, 那么忘记控制就会将之前的某些主线剧情忘记, 按比例替换成现在的新剧情.
+    所以 主线剧情的更新就取决于输入和忘记控制. 最后的输出方面, 输出控制会基于目前的主线剧情和分线剧情判断要输出的到底是什么.基于这些控制机制,
+    LSTM 就像延缓记忆衰退的良药, 可以带来更好的结果
 
-12��reshape��Ϊ���֣�һ����ndArray.reshape���������ֵ����һ��ndArray����һ����tensorflow.reshape�����������һ��Tensor������Ҫ��sess.run()������ʾ���
+12、reshape分为两种，一种是ndArray.reshape，这个返回值还是一个ndArray，另一个是tensorflow.reshape，这个返回是一个Tensor对象，需要用sess.run()才能显示结果
 
-13��_, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})����һ��������fetches��������һ��Ԫ�ػ�һ�����飬����ʱ��ִ��fetches����ÿ��Ԫ�أ�Ȼ��
-   ÿ��Ԫ�ض������һ����Ӧ����������������optimizer����_��cost����c
+13、_, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})，第一个参数是fetches，可以是一个元素或一个数组，运行时会执行fetches里面每个元素，然后
+   每个元素都会产生一个对应结果，上面这个就是optimizer返回_，cost返回c
 
-14��mnist = input_data.read_data_sets("/tmp/data/", one_hot=True) one_hotΪTrue����label(��ÿ��xs��Ӧ��ys)��ֵ��һ��vector��ʾ����������ܹ�һ��ʮ�У�0�����ֵ��1
-   �Ǿ���ֵ����λ�ã�����3�ͱ����[0,0,0,1,0,0,0,0,0,0],one_hotΪFalse��������vector��ʾ��3����3
+14、mnist = input_data.read_data_sets("/tmp/data/", one_hot=True) one_hot为True代表label(即每个xs对应的ys)的值用一个vector表示，这个向量总共一行十列，0是填充值，1
+   是具体值所在位置，比如3就变成了[0,0,0,1,0,0,0,0,0,0],one_hot为False代表不用vector表示，3就是3
 
-15������������, ���ݷֲ���ѵ�������Ӱ��. ����ĳ����Ԫ x ��ֵΪ1, ĳ�� Weights �ĳ�ʼֵΪ 0.1, ������һ����Ԫ���������� Wx = 0.1;
-    �ֻ��� x = 20, ���� Wx �Ľ����Ϊ 2. ���ڻ����ܿ���ʲô����, ����, �����Ǽ���һ�㼤������, ������� Wx ֵ��ʱ��, ���������.
-    ���ʹ�� �� tanh �ļ�������, Wx �ļ���ֵ�ͱ���� ~0.1 �� ~1, �ӽ��� 1 �������Ѿ������˼��������ı��ͽ׶�, Ҳ������� x ��������ô����,
-    tanh �����������ֵҲ���ǽӽ�1. ���仰˵, �������ڳ�ʼ�׶��Ѿ�������Щ�Ƚϴ�� x ������Χ ������. ���������,
-    �������������Լ��ĸо������ش��Լ��ĸо���Ȼûʲô���, ���֤���ҵĸй�ϵͳʧЧ��. ��Ȼ�����ǿ�����֮ǰ�ᵽ�Ķ������� normalization Ԥ����,
-    ʹ������� x �仯��Χ����̫��, ������ֵ�����������������в���. ���ո�������������ⲻ����������������������, ���������ز���Ҳ�����ᷢ��
+15、在神经网络中, 数据分布对训练会产生影响. 比如某个神经元 x 的值为1, 某个 Weights 的初始值为 0.1, 这样后一层神经元计算结果就是 Wx = 0.1;
+    又或者 x = 20, 这样 Wx 的结果就为 2. 现在还不能看出什么问题, 但是, 当我们加上一层激励函数, 激活这个 Wx 值的时候, 问题就来了.
+    如果使用 像 tanh 的激励函数, Wx 的激活值就变成了 ~0.1 和 ~1, 接近于 1 的数据已经处在了激励函数的饱和阶段, 也就是如果 x 无论再怎么扩大,
+    tanh 激励函数输出值也还是接近1. 换句话说, 神经网络在初始阶段已经不对那些比较大的 x 特征范围 敏感了. 这样很糟糕,
+    想象我轻轻拍自己的感觉和重重打自己的感觉居然没什么差别, 这就证明我的感官系统失效了. 当然我们是可以用之前提到的对数据做 normalization 预处理,
+    使得输入的 x 变化范围不会太大, 让输入值经过激励函数的敏感部分. 但刚刚这个不敏感问题不仅仅发生在神经网络的输入层, 而且在隐藏层中也经常会发生
 
-    ��ˣ�����ʹ��tf.nn.batch_normalization(xs, mean, var, shift, scale, epsilon)��Ԥ��������
+    因此，可以使用tf.nn.batch_normalization(xs, mean, var, shift, scale, epsilon)来预处理数据
 
-16��python�ж��󴫵��ǰѶ����ַ���ݹ�ȥ����˸ı�������ݻ��ԭ�����������ͬӰ�죬����������ö�������ָ����һ����ַ��ԭ���Ķ����ǲ�����Ӱ��ģ�
-    ����������׼������ʱ�������Tensor����ᱻ����ָ����һ����ַ��xs = tf.nn.batch_normalization(inputs, mean, var, shift, scale, epsilon)��������
-    ����Ӱ��ԭ����xs�����
+16、python中对象传递是把对象地址传递过去，因此改变对象内容会对原来对象产生相同影响，但是如果将该对象引用指向另一个地址，原来的对象是不会受影响的，
+    比如在批标准化数据时，传入的Tensor对象会被重新指向另一个地址，xs = tf.nn.batch_normalization(inputs, mean, var, shift, scale, epsilon)，这样是
+    不会影响原来的xs对象的
 
-17�� Q learning�ǻ��ڼ�ֵ��һ�ֻ���ѧϰ�㷨��ÿ��ֻѡȡ��ֵ��ߵ���Ϊ��һ������������ѧϰ��
-     ����ͨ��ά��һ��Q���񣬱����ǹ��� s��״̬�� �� a����Ϊ�� ��һ���洢��ÿ��(s,a)��Ӧһ��ֵ��ÿ���жϻ�ѡȡֵ����a��Ϊ��һ����Ϊ
-     Q�������,������Q����s1,s2����״̬��a1,a2������Ϊ��
+17、 Q learning是基于价值的一种机器学习算法，每次只选取价值最高的作为下一步，属于离线学习，
+     它是通过维护一张Q表格，表格是关于 s（状态） 和 a（行为） 的一个存储，每个(s,a)对应一个值，每次判断会选取值最大的a作为下一个行为
+     Q表格更新,假如有Q表格（s1,s2代表状态，a1,a2代表行为）
 
           a1    a2
      s1   -2    1
      s2   -4    2
 
-     ��ôQ(s1,a2)��ʵֵ�͵��� R + ��*Max[Q(s`, all actions)]��Q(s1,a2)Ԥ��ֵ����Q(s1,a2)��R������ǰ�Ľ������ô�����������������ӳ̶ȣ�
-     ��Խ�󣬾ͻ�Խ�����������飬��=0ʱֻ�ܿ�����ǰ�Ľ��� R
-     ����Q(s1,a2) = ��Q(s1,a2) + ��*����ʵֵ - ����ֵ��
+     那么Q(s1,a2)现实值就等于 R + γ*Max[Q(s`, all actions)]，Q(s1,a2)预估值等于Q(s1,a2)，R代表眼前的奖励，γ代表对以往经验的重视程度，
+     γ越大，就会越重视以往经验，γ=0时只能看到眼前的奖励 R
+     最终Q(s1,a2) = 老Q(s1,a2) + α*（现实值 - 估计值）
 
 
-18��SarsaҲ�ǻ��ڼ�ֵ��ѧϰ�㷨��ͬ��������ı��������
-    Q(s1,a2)��ʵֵ�͵��� R + ��*Q(s2��a2)��Q(s1,a2)Ԥ��ֵ����Q(s1,a2),��=1ʱ��ʾ����ʷ����ȽϿ��أ���=0ʱ��ʾ������ʷ���飬
-    ����Q(s1,a2) = ��Q(s1,a2) + ��*����ʵֵ - ����ֵ��
-    Sarsa�� Q learning��ͬ����Sarsaÿִ��һ��������ͻ����һ��״̬�Լ�action�����ã�����Q-learningֻ������һ��״̬,action��û������
-    SarsaӦ�ó�������Ըѡ���ֵ��һ�����ΪҲҪ�ܿ�Σ�յ����������ѡ��action��鲻̫һ��
+18、Sarsa也是基于价值的学习算法，同样拿上面的表格举例：
+    Q(s1,a2)现实值就等于 R + γ*Q(s2，a2)，Q(s1,a2)预估值等于Q(s1,a2),γ=1时表示对历史经验比较看重，γ=0时表示不看历史经验，
+    最终Q(s1,a2) = 老Q(s1,a2) + α*（现实值 - 估计值）
+    Sarsa与 Q learning不同的是Sarsa每执行一个动作后就会把下一个状态以及action决定好，不像Q-learning只给出下一个状态,action还没决定好
+    Sarsa应用场景是宁愿选择价值低一点的行为也要避开危险的情况，所以选择action这块不太一样
 
-19����ʵ��Q����״̬�ǳ��࣬�����޷�ȫ���洢��һ�ַ�ʽ�����������磬ÿ������һ��״̬s��Ȼ�����������Ϊ��Ӧ��ֵ���ٴ���ѡȡ���У�
-    ������ÿ�θ��µĲ��������ϵ� NN(Neural Network) ���� ��ѧϰ�� alpha ���� Q ��ʵ �� Q ���� �Ĳ�ࣺw = ��w + ��*����ʵֵ - ����ֵ��
+19、现实中Q表格状态非常多，所以无法全部存储，一种方式是利用神经网络，每次输入一个状态s，然后输出所有行为对应的值，再从中选取就行，
+    神经网络每次更新的参数就是老的 NN(Neural Network) 参数 加学习率 alpha 乘以 Q 现实 和 Q 估计 的差距：w = 老w + α*（现实值 - 估计值）
 
-20�� Deep Q Network ���Ϊ DQN����Q-Learning��������Ľ�ϣ�����Ҫ��Experience replay �� Fixed Q-targets��ɣ�Experience replay����ѧϰ֮ǰ�ľ�����
-     ��������������ȥ̽�������������飨���䣩���ۻ���һ���̶ȣ��������ȡ��һ����������ѵ����
-     ʹ��fixed Q-targets, ���Ǿͻ��� DQN ��ʹ�õ������ṹ��ͬ��������ͬ��������, Ԥ�� Q ���Ƶ�������߱����µĲ���,�� Q���� = Q�в��������µģ�
-     ��Ԥ�� Q ��ʵ��������ʹ�õĲ������Ǻܾ���ǰ�ģ��� Q��ʵ = R + ��*maxQ�в����ǱȽϾ�֮ǰ��
+20、 Deep Q Network 简称为 DQN，是Q-Learning与神经网络的结合，它主要由Experience replay 和 Fixed Q-targets组成，Experience replay用于学习之前的经历，
+     就是先让智能体去探索环境，将经验（记忆）池累积到一定程度，在随机抽取出一批样本进行训练，
+     使用fixed Q-targets, 我们就会在 DQN 中使用到两个结构相同但参数不同的神经网络, 预测 Q 估计的神经网络具备最新的参数,即 Q估计 = Q中参数是最新的，
+     而预测 Q 现实的神经网络使用的参数则是很久以前的，即 Q现实 = R + γ*maxQ中参数是比较久之前的
 
-     Deep Q Networkѵ��ǰҪ���ۻ�һ����״̬�� Q ��ʵ��Ӧ�����ݣ�Ȼ���ٰ���Щ���ݶ���������ȥѵ�����������
+     Deep Q Network训练前要先累积一定的状态和 Q 现实对应的数据，然后再把这些数据丢进神经网络去训练神经网络参数
 
-     ע�⣺
-     1��reward���Ҫ��Ͼ��峡����������Ϸֻ�ǵ���ĳһ���ڣ���ôreward�������ó�Խ��������Խ������ǵ���ĳһ�㣬�����Χ���е������ֶ�����
-        ��ôĿ����reward��󣬵���Ϊ��������Ŀ����reward�Ͳ�ҪԽ��Խ���ˣ����Ƕ�Ϊ0����Ȼ�ᵼ�´��������
-     2�����״̬̫��Ļ�һ��ʼ��û��ȫ��Ԥ����ģ���ʱ���Ҫ��ʵ��ѵ���������������״̬�����ڣ��ͰѸ�״̬���ӽ�ȥ����������״̬����
+     注意：
+     1）reward设计要结合具体场景，比如游戏只是到达某一出口，那么reward可以设置成越靠近出口越大，如果是到达某一点，这点周围又有地雷这种东西，
+        那么目标点的reward最大，地雷为负，靠近目标点的reward就不要越来越大了，而是都为0，不然会导致错误的引导
+     2）如果状态太多的话一开始是没法全部预定义的，这时候就要靠实际训练过程中如果发现状态不存在，就把该状态添加进去来不断完善状态数组
 
-21���㷨ѡ���Ͽ����ȿ��Ƕ����Ƿ��������������� (������һ������ֵ, ������ת�Ƕ�)
+21、算法选择上可以先考虑动作是否连续，连续动作 (动作是一个连续值, 比如旋转角度)
         Policy gradient
         DDPG
         A3C
         PPO
-    ��ɢ���� (������һ����ɢֵ, ������ǰ,�����)
+    离散动作 (动作是一个离散值, 比如向前,向后走)
         Q-learning
         DQN
         A3C
         PPO
 
-22��������ݲ��Ǹ������Ļ�����Ҫ��ת���ɸ��������ܽ���ѵ��������������಻��Ļ�������
-    pandas.get_dummies(data, prefix=data.columns)��һ��dataFrameת��one_hot�ṹ����ÿһ�����ݶ���һ��0��1�����б�ʾ��������������������
+22、如果数据不是浮点数的话就需要先转换成浮点数才能进行训练，如果数据种类不多的话可以用
+    pandas.get_dummies(data, prefix=data.columns)把一个dataFrame转成one_hot结构，即每一行数据都用一组0和1的序列表示，这样便于用于神经网络
 
-23��������ʶ�����Ļ�����ΪȨֵ���Ǹ���������������Ҳ�Ǹ���������˱����Ȱ�������ĸ�������ת��byte���飬Ȼ����ת��float������Ϊ���룬
-    Ȼ���ôʵ��еĳ������ѵ��
+23、神经网络识别成语的话，因为权值都是浮点数，所以输入也是浮点数，因此必须先把输入的四个汉字先转成byte数组，然后再转成float数组作为输入，
+    然后用词典中的成语进行训练
 
-24����tensorflow��ѵ��������ʱ��ѵ����һ�룬����Nan in summary histogram for:xxx�����������һ��ÿ�ζ����֣���ʱ��ѵ��ʱ����֣���ʱ���򲻻ᡣ
-    �������������һ��������������������
-    1��Loss�ļ��������cross_entropy = -tf.reduce_sum(y_*tf.log(y))�����y��ֵ = 0����log(y)��������
-       ��������ǣ�����ʽ�޸�Ϊ��cross_entropy = -tf.reduce_sum(y_*tf.log(tf.clip_by_value(y,1e-10,1.0)))
-    2��һ���������Ż�����ѧϰ�����ò������µģ���ʱ���Գ���ʹ�ø�С��ѧϰ�ʽ���ѵ�����������������
-    3) ѵ��������̫��
+24、在tensorflow中训练神经网络时，训练到一半，出现Nan in summary histogram for:xxx，这种情况不一定每次都出现，有时候训练时会出现，有时候则不会。
+    出现这种情况，一般是由以下三种情况造成
+    1）Loss的计算采用了cross_entropy = -tf.reduce_sum(y_*tf.log(y))，如果y的值 = 0，则log(y)则会出错，
+       解决方法是，将上式修改为：cross_entropy = -tf.reduce_sum(y_*tf.log(tf.clip_by_value(y,1e-10,1.0)))
+    2）一般是由于优化器的学习率设置不当导致的，此时可以尝试使用更小的学习率进行训练来解决这样的问题
+    3) 训练数据量太少
 
-25���������ز��С�ľ��鷨�����������������֮�䣬Ϊ�˼������ز��С����ʹ��һ��һ�㷨�򣺣������С+�����С��*2/3
-    ��ȻҲ����һ���������ز��С���ҵ�������õ��Ǹ���С
+25、关于隐藏层大小的经验法则是在输入层和输出层之间，为了计算隐藏层大小我们使用一个一般法则：（输入大小+输出大小）*2/3
+    当然也可以一个个试隐藏层大小，找到泛化最好的那个大小
 
-26��Ҫ��Ҫѡ�����ѧϰ����ѡ����໹�ǻع���ĳһʵ�����⣬���˵ĸ������������㣺
-    1��Ҫ��Ҫѡ�����ѧϰ�����������⣬�������������ⶼ���û���ѧϰ����ģ��������������û���κι��ɿ��ԣ���ô����ѧϰҲ����Ϊ����
-    2��ѡ����࣬��ô���������޵ģ���������Ҫ������������Ҫ�����֮����һ���Ĺ��ɣ������������ͨ��һ���ж��ܹ�׼ȷʶ����������������������ݱ��븲������
-       ��𣬲�Ȼģ�;Ͳ����з����������Ƚϵ��͵�����д����ʶ����Ϊ�����ͼƬ���غͶ�Ӧ��Ȩֵ��Ȩ����Ψһȷ�����ͼ�����״��Ҳ����������Կ���ѡ����ࡣ
-       �������ж�һ�����ǲ��ǳ���������������û����ȷ��ϵ�ľͲ��ʺ�ѡ������ˡ�
-    3��ѡ��ع飬����������ǵ���ֵ�����ҳ�x��y��������ߣ�������ж�һ�����ⲻ�ʺϷ��࣬��ô�������Իع顣
+26、要不要选择机器学习或者选择分类还是回归解决某一实际问题，个人的感悟是以下三点：
+    1）要不要选择机器学习来解决这个问题，并不是所有问题都能用机器学习解决的，如果输入和输出并没有任何规律可言，那么机器学习也无能为力。
+    2）选择分类，那么类别就是有限的，而且最重要的是输入数据要和类别之间有一定的规律，即输入的数据通过一定判断能够准确识别出所属类别，另外输入的数据必须覆盖所有
+       类别，不然模型就不具有泛化能力，比较典型的像手写数字识别，因为输入的图片像素和对应的权值加权和能唯一确定这幅图像的形状，也就是类别，所以可以选择分类。
+       但是像判断一个词是不是成语这种输入和类别没有明确关系的就不适合选择分类了。
+    3）选择回归，这种输出就是单个值，即找出x和y的拟合曲线，如果你判断一个问题不适合分类，那么可以试试回归。
 
 
-27��double Q:
-    DQN ���� Q-learning, Q-Learning ���� Qmax, Qmax �ᵼ�� Q��ʵ���еĹ����� (overestimate). �� Double DQN ����������������Ƶ�. ��ʵ��������,
-    ����������� DQN �� Q ֵ, ���ܾͻᷢ��, Q ֵ��������. ����ǳ����� overestimate����Ϊ���ǵ�������Ԥ�� Qmax �����������,
-    ÿ��Ҳ����������� Q��ʵ �Ľ�������, ������Ϊ��� Qmax ������ overestimate. ���� Double DQN ���뷨����������һ��������������һЩ�������Ӱ��.
-    �� DQN �б�����������������, ���Ǻβ�����һ���������������. ����, ������ Q���Ƶ���������� Q��ʵ �� Qmax(s', a') �������ֵ.
-    Ȼ��������� Q���� ���Ƴ����Ķ�����ѡ�� Q��ʵ �е� Q(s')����ΪQ���Ƶ�Ȩֵ�����µģ���������������Q��ʵ�е�Qmax��Ƚ�׼ȷ
+27、double Q:
+    DQN 基于 Q-learning, Q-Learning 中有 Qmax, Qmax 会导致 Q现实当中的过估计 (overestimate). 而 Double DQN 就是用来解决过估计的. 在实际问题中,
+    如果你输出你的 DQN 的 Q 值, 可能就会发现, Q 值都超级大. 这就是出现了 overestimate，因为我们的神经网络预测 Qmax 本来就有误差,
+    每次也向着最大误差的 Q现实 改进神经网络, 就是因为这个 Qmax 导致了 overestimate. 所以 Double DQN 的想法就是引入另一个神经网络来打消一些最大误差的影响.
+    而 DQN 中本来就有两个神经网络, 我们何不利用一下这个地理优势呢. 所以, 我们用 Q估计的神经网络估计 Q现实 中 Qmax(s', a') 的最大动作值.
+    然后用这个被 Q估计 估计出来的动作来选择 Q现实 中的 Q(s')，因为Q估计的权值是最新的，所以用它来估计Q现实中的Qmax会比较准确
 
-28��DQNѧϰ������������ѡȡ������ģ������ᵼ��ѧϰ���ٶȱȽ�����������Ҫ���ȼ���ѡȡ��������ô���������ȼ�����ô������? ���ǿ����õ� TD-error,
-    Ҳ���� Q��ʵ - Q���� ���涨����ѧϰ�ĳ̶�. ��� TD-error Խ��, �ʹ������ǵ�Ԥ�⾫�Ȼ��кܶ������ռ�, ��ô���������Խ��Ҫ��ѧϰ, Ҳ�������ȼ� p Խ��
+28、DQN学习过程中样本的选取是随机的，这样会导致学习的速度比较慢，所以需要优先级来选取样本，那么样本的优先级是怎么定的呢? 我们可以用到 TD-error,
+    也就是 Q现实 - Q估计 来规定优先学习的程度. 如果 TD-error 越大, 就代表我们的预测精度还有很多上升空间, 那么这个样本就越需要被学习, 也就是优先级 p 越高
 
-    ���� TD-error ���������ȼ� p, �����������Ч�ظ��� p ��������? ���ÿ�γ�������Ҫ��� p ��������������, �⽫����һ���ǳ����ļ�����������.
-    �������ǻ�����������, ���ַ�������Եõ���������������. ����SumTree
+    有了 TD-error 就有了优先级 p, 那我们如何有效地根据 p 来抽样呢? 如果每次抽样都需要针对 p 对所有样本排序, 这将会是一件非常消耗计算能力的事.
+    好在我们还有其他方法, 这种方法不会对得到的样本进行排序. 就是SumTree
 
-    ����ʱ, ���ǻὫ p ���ܺ� ���� batch size, �ֳ� batch size ��ô������, (n=sum(p)/batch_size). ��������� node �� priority ��������42�Ļ�,
-    ���������6������, ��ʱ������ӵ�е� priority ����������.
+    抽样时, 我们会将 p 的总合 除以 batch size, 分成 batch size 那么多区间, (n=sum(p)/batch_size). 如果将所有 node 的 priority 加起来是42的话,
+    我们如果抽6个样本, 这时的区间拥有的 priority 可能是这样.
     [0-7], [7-14], [14-21], [21-28], [28-35], [35-42]
 
-    Ȼ����ÿ�����������ѡȡһ����. �����ڵ����� [21-28] ��ѡ����24, �Ͱ������ 24 �����ȼ�������SumTree�Ķ��㿪ʼ��������.
-    ÿ���Ⱥͽڵ�����ӽڵ�Ƚϣ����24�������ѡ���ұ߲��Ҽ�ȥ���ӽڵ��ֵ������ѡ������Ҳ���Ҫ��ȥ�κ�ֵ��ѭ����ȥֱ������Ҷ�ӽڵ�,
-    Ȼ�����ѡ���Ҷ�ӽڵ��λ�����������λ�ã������ͻ�ȡ��ѡ������������Լ����ȼ�ֵ�������ȥѵ��������
+    然后在每个区间里随机选取一个数. 比如在第区间 [21-28] 里选到了24, 就按照这个 24 从优先级二叉树SumTree的顶点开始向下搜索.
+    每次先和节点的左孩子节点比较，如果24比它大就选择右边并且减去左孩子节点的值，否则选择左边且不需要减去任何值，循环下去直到遇到叶子节点,
+    然后根据选择的叶子节点的位置算出样本的位置，这样就获取到选择的样本数据以及优先级值，最后拿去训练就行了
 
-29��Dueling �㷨��
-    ����ÿ�������� Q ��ֳ��� state �� Value ���� ÿ�������� Advantage����Q = V(s) + A(s,a)
-    ��Ϊ��ʱ����ĳ�� state, ������ʲô����, ����һ�� state ��û�ж��Ӱ��.
+29、Dueling 算法：
+    它将每个动作的 Q 拆分成了 state 的 Value 加上 每个动作的 Advantage，即Q = V(s) + A(s,a)
+    因为有时候在某种 state, 无论做什么动作, 对下一个 state 都没有多大影响.
 
 
-30��Policy Gradients�ǻ��ڸ��ʵ�һ���㷨���ʺ������Ķ�������������ֱ���ת����ѡ����һ���������ǿ�����ֵ������ѡȡ�����ʵĶ�����
-    �����������أ�����������ǽ����ķ���������ĳ��״̬��ѡ��һ��������ý����Ƚϸߣ���ô�´�ѡ����������ĸ��ʾͻ���loss���£�
+30、Policy Gradients是基于概率的一种算法，适合连续的动作，比如机器手臂旋转，它选择下一个动作不是看奖励值，而是选取最大概率的动作，
+    那怎样收敛呢，这个依靠的是奖励的反馈，比如某种状态下选择一个动作获得奖励比较高，那么下次选择这个动作的概率就会变大，loss如下：
 
     neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=all_act, labels=self.tf_acts)
-    loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # (vt = ��reward + ˥����δ��reward) �����������ݶ��½�
+    loss = tf.reduce_mean(neg_log_prob * self.tf_vt)  # (vt = 本reward + 衰减的未来reward) 引导参数的梯度下降
 
-    neg_log_prob����ѡ action �ĸ��� -log ֵ������ԽС��Խ�󣬿�������� action ���ʹ���ֵ all_act �������ʵ�ʸ��� tf_acts ���������ʷֲ���
-    neg_log_prob * self.tf_vt ԽС˵�����ʴ��action��Ӧ��reward�ȸ���С��Ӧ��reward�������������Ŀ��
+    neg_log_prob求所选 action 的概率 -log 值，概率越小它越大，可以理解成 action 概率估计值 all_act 和输入的实际概率 tf_acts 的误差，即概率分布误差，
+    neg_log_prob * self.tf_vt 越小说明概率大的action对应的reward比概率小对应的reward大，这就是收敛的目的
 
-    vt = ��reward + ˥����δ��reward���������������Լ���reward����������һ���غ�֮ǰaction��reward,���þ��Ǹ���ģ�͵�ǰ��ȡ�����ķ����ǶԵĻ��Ǵ��ģ�
-    ��� vt С, �����Ǹ���, ��˵������ݶ��½���һ������ķ���, ����Ӧ��������һ��������²���,������ vt ������, ��ܴ�,
-    vt �ͻ���� cross-entropy �������ݶ�, ��������������ݶ��½�
+    vt = 本reward + 衰减的未来reward，它不仅包括了自己的reward，还考虑了一个回合之前action的reward,作用就是告诉模型当前采取动作的方向是对的还是错的，
+    如果 vt 小, 或者是负的, 就说明这个梯度下降是一个错误的方向, 我们应该向着另一个方向更新参数,如果这个 vt 是正的, 或很大,
+    vt 就会称赞 cross-entropy 出来的梯度, 并朝着这个方向梯度下降
 
-    �Ա����Լ�ֵΪ�����ķ���, Policy Gradients ֱ��������������ô�����, ������һ��������������ѡ����, ������ֵ��, ���� Q-learning,
-    ������������Ķ����м����ֵ, �Ӷ�ѡ����Ϊ, ��ɳԲ���
+    对比起以价值为基础的方法, Policy Gradients 直接输出动作的最大好处就是, 它能在一个连续区间内挑选动作, 而基于值的, 比如 Q-learning,
+    它如果在无穷多的动作中计算价值, 从而选择行为, 这可吃不消
 
-    Policy Gradients�ǻ��ڻغϸ��£�ÿ�غ�ѧϰһ�Σ�Ȼ��ɾ����غ�����
+    Policy Gradients是基于回合更新，每回合学习一次，然后删掉这回合数据
 
-31��Actor-Critic��
-    Actor ��ǰ���� Policy Gradients, ������������������������������ѡȡ���ʵĶ���, �� Q-learning ������»�̱��
+31、Actor-Critic：
+    Actor 的前身是 Policy Gradients, 这能让它毫不费力地在连续动作中选取合适的动作, 而 Q-learning 做这件事会瘫痪
 
-    Critic�ļ�����Policy Gradients���Խ��е������£���Ϊѡ�����õ�Actor��������Ժܿ�ľ�����һ��������Ȼ��
-    ִ��һ��������ȡ�Ľ���������Critic����ʱCritic���Լ������һ��״̬Ӧ�ò�ȡʲô������Ȼ�����Actor������Actorÿ��
-    ���ܵõ�ָ�㣬��������Policy GradientsҪ�ȻغϽ������ܵõ�ָ��
+    Critic的加入让Policy Gradients可以进行单步更新，因为选择动作用的Actor神经网络可以很快的决定下一个动作，然后
+    执行一个动作获取的奖励反馈给Critic，这时Critic可以计算出下一个状态应该采取什么动作，然后告诉Actor，这样Actor每步
+    都能得到指点，而不是像Policy Gradients要等回合结束才能得到指点
 
-31��Deep Deterministic Policy Gradient (DDPG)��
-    DDPG ������ Actor-Critic �� Policy gradient �������µľ���, ���һ������ü����ѧ������Ϸ�� DQN �ľ�����Actor�������������
-    Ȼ���ѡ��Ķ�������Critic��Critic��ʼ����������������ļ�ֵ�� Critic��Ŀ������ Q���� =  Q��ʵ��Actor��Ŀ������Q��ʵ��󻯣�
-    ���յ�Ŀ������Actorѡ��Ķ����ܴ������Ľ���
+31、Deep Deterministic Policy Gradient (DDPG)：
+    DDPG 吸收了 Actor-Critic 让 Policy gradient 单步更新的精华, 而且还吸收让计算机学会玩游戏的 DQN 的精华，Actor负责决定动作，
+    然后把选择的动作传给Critic，Critic开始计算这个动作带来的价值， Critic的目的是让 Q估计 =  Q现实，Actor的目的是让Q现实最大化，
+    最终的目的是让Actor选择的动作能带来最大的奖励
 
-    DDPG �����֮ǰ��óɹ��� DQN �ṹ, ����� Actor Critic ���ȶ��Ժ�������
+    DDPG 结合了之前获得成功的 DQN 结构, 提高了 Actor Critic 的稳定性和收敛性
 
-32��DQNΪʲô���ʺ�����������
-    ����һ������6���ؽڵĻ�е�ۣ�ÿ���ؽڵĽǶ����������ֵ�����跶Χ��0��~360�㣬��һ����Ϊ��-1��1��������ÿ���ؽڽ�ȡֵ��Χ��ɢ����
-    ���羫�ȵ�0.01����һ���ؽ���200��ȡֵ����ô6���ؽڹ���200^6��ȡֵ������һ������������ȣ�ȡֵ���������ɱ����ӣ�
-    ���Ҷ������������������ɶȵ����ӳ�ָ�������������Ը����޷��ô�ͳ��DQN���������
+32、DQN为什么不适合连续动作：
+    比如一个具有6个关节的机械臂，每个关节的角度输出是连续值，假设范围是0°~360°，归一化后为（-1，1）。若把每个关节角取值范围离散化，
+    比如精度到0.01，则一个关节有200个取值，那么6个关节共有200^6个取值，若进一步提升这个精度，取值的数量将成倍增加，
+    而且动作的数量将随着自由度的增加呈指数型增长。所以根本无法用传统的DQN方法解决。
 
-    ��������������ֱ����������DDPG���ܽ���ˣ�����һ��״̬�����6��action��ÿ��action�ķ�Χ������(-1,1)���棬Ȼ����ʾ��ʱ�򣬴�
-    ��һ���ؽڵ㿪ʼ�����θ��ݶ�Ӧ��action��ת�Ƕȣ�����ÿ�ξ�ֻ��Ҫ6������ˣ�����DQN��Ҫ��������action��ѡһ����
+    但是上面机器人手臂问题如果用DDPG就能解决了，输入一个状态，输出6个action，每个action的范围限制在(-1,1)上面，然后显示的时候，从
+    第一个关节点开始，依次根据对应的action旋转角度，这样每次就只需要6个输出了，不像DQN需要罗列所有action后选一个。
 
-    DDPG�ĺô�������һ��������������ѡ��������������DQN�������Ķ����м����ֵ, �Ӷ�ѡ����Ϊ
+    DDPG的好处是能在一个连续区间内挑选动作，而不是像DQN在无穷多的动作中计算价值, 从而选择行为
 
-33���ݶ��½�������
-      1. ��ʧ�����ı���ʽΪ��J(��) = 1/2 * (X��-Y)T * (X��-Y), ����Y�����������������X��������������T����ת�þ��󣬦�����������������Ȩ��.
+33、梯度下降相关理念：
+      1. 损失函数的表达式为：J(θ) = 1/2 * (Xθ-Y)T * (Xθ-Y), 其中Y是样本的输出向量，X代表输入样本，T代表转置矩阵，θ是样本各个参数的权重.
 
-������2. �㷨��ز�����ʼ��: ���������Գ�ʼ��ΪĬ��ֵ�����ߵ��ź��ֵ���㷨��ֹ����ţ���������
-         �����㷨��ֹ��ָ���μ�������Ĳ�ֵ�㹻С������0.00000001�����ֵ������ֹ����
+　　　2. 算法相关参数初始化: θ向量可以初始化为默认值，或者调优后的值。算法终止距离ε，步长α。
+         其中算法终止是指两次计算出来的差值足够小，比如0.00000001，这个值就是终止距离
 
-������3. �㷨���̣�
+　　　3. 算法过程：
 
-����������1��ȷ����ǰλ�õ���ʧ�������ݶȣ����ڦ�����,���ݶȾ���ƫ����������ʽ���£�
-������������������?J(��)/?��
-����������2���ò�����(ѧϰ��)������ʧ�������ݶȣ��õ���ǰλ���½��ľ��룬����*?J(��)/?��
+　　　　　1）确定当前位置的损失函数的梯度，对于θ向量,其梯度就是偏导数，表达式如下：
+　　　　　　　　　?J(θ)/?θ
+　　　　　2）用步长α(学习率)乘以损失函数的梯度，得到当前位置下降的距离，即α*?J(θ)/?θ
 
-����������3��ȷ�������������ÿ��ֵ,�ݶ��½��ľ��붼С�ڦţ����С�ڦ�,���㷨��ֹ����ǰ��������Ϊ���ս����������벽��4.
+　　　　　3）确定θ向量里面的每个值,梯度下降的距离都小于ε，如果小于ε,则算法终止，当前θ向量即为最终结果。否则进入步骤4.
 
-����������4�����¦�����������±���ʽ���¡�������Ϻ����ת�벽��1.
-������������ ��=��-��*?J(��)/?��
+　　　　　4）更新θ向量，其更新表达式如下。更新完毕后继续转入步骤1.
+　　　　　　 θ=θ-α*?J(θ)/?θ
 
-          5������Ŀ��������ʧ�����ڦȴ���ƫ�����ӽ�0��������ɽ�š���Ȼ��������ȥ���п������ǲ����ߵ�ɽ�ţ����ǵ���ĳһ���ֲ���ɽ��ʹ���
-             �����ݶ��½���һ���ܹ��ҵ�ȫ�ֵ����Ž⣬�п�����һ���ֲ����Ž⡣��Ȼ�������ʧ������͹�������ݶ��½����õ��Ľ��һ����ȫ�����Ž�
+          5）最终目的是让损失函数在θ处的偏导数接近0，即到达山脚。当然这样走下去，有可能我们不能走到山脚，而是到了某一个局部的山峰低处，
+             所以梯度下降不一定能够找到全局的最优解，有可能是一个局部最优解。当然，如果损失函数是凸函数，梯度下降法得到的解就一定是全局最优解
 
-34����TensorFlowѵ����ģ����ֲ��Android�ֻ�����ģ��ѵ��������Ĵ���λ�ã���������������룬�ɽ�ģ�ͱ���Ϊ.pb�ļ�
+34、将TensorFlow训练的模型移植到Android手机，在模型训练结束后的代码位置，添加下述两句代码，可将模型保存为.pb文件
     self.output_graph_def = tf.graph_util.convert_variables_to_constants(self.sess, self.sess.graph_def,
                                                                            ['eval_net/Q/%s' % self.output_node])
-    ע�⣺
-    1���β�output_node_names����ָ������Ľڵ�����,����ָ�������������name_scope����variable_scope��Ҫ����ǰ׺
-    2���ķ������õĵط���Ҫ�ŵ�ѵ��������ʱ����ã���Ϊ���õ�ʱ���Ƕ�ȡ��ǰ��sess���������һ��ʼ�͵��ã��������ǿյ�
+    注意：
+    1）形参output_node_names用于指定输出的节点名称,必须指定，并且如果有name_scope或者variable_scope需要加上前缀
+    2）改方法调用的地方需要放到训练结束的时候调用，因为调用的时候是读取当前的sess参数，如果一开始就调用，参数都是空的
     with tf.gfile.FastGFile('model\mnist.pb', mode='wb') as f:
         f.write(output_graph_def.SerializeToString())
-    ��һ����������ָ��������ļ����·�����ļ�������ʽ���Ұ������������ͬ��Ŀ¼��model�ļ��£�ȡ��Ϊmnist.pb
+    第一个参数用于指定输出的文件存放路径、文件名及格式。我把它放在与代码同级目录的model文件下，取名为mnist.pb
 
-    �ڶ������� mode����ָ���ļ�������ģʽ����wb����w����д�ļ���b�����������Զ����Ʒ�ʽд���ļ�
-    �����ָ����b������Ĭ�ϻ����ı�txt��ʽд���ļ�������TF����֧�ֶ��ı���ʽ.pb�ļ��Ľ������ڵ���ʱ����ֱ�����
+    第二个参数 mode用于指定文件操作的模式，’wb’中w代表写文件，b代表将数据以二进制方式写入文件
+    如果不指明‘b’，则默认会以文本txt方式写入文件。现在TF还不支持对文本格式.pb文件的解析，在调用时会出现报错。
 
-    ע��
-    1)������ʹ�� tf.train.write_graph()����ģ�ͣ���Ϊ��ֻ�Ǳ�����ģ�͵Ľṹ����������ѵ����ϵĲ���ֵ
-    2)������ʹ�� tf.train.saver()����ģ�ͣ���Ϊ��ֻ�Ǳ����������еĲ���ֵ����������ģ�͵Ľṹ��
-    ����Ȼ��������Ҫ���Ǽȱ���ģ�͵Ľṹ���ֱ���ģ����ÿ��������ֵ���������߽Բ����ϡ�
-    ����ο���https://blog.csdn.net/masa_fish/article/details/56049710?winzoom=1
+    注：
+    1)、不能使用 tf.train.write_graph()保存模型，因为它只是保存了模型的结构，并不保存训练完毕的参数值
+    2)、不能使用 tf.train.saver()保存模型，因为它只是保存了网络中的参数值，并不保存模型的结构。
+    很显然，我们需要的是既保存模型的结构，又保存模型中每个参数的值。以上两者皆不符合。
+    具体参考：https://blog.csdn.net/masa_fish/article/details/56049710?winzoom=1
